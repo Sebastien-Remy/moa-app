@@ -1,12 +1,13 @@
 # macOS
 .DS_Store
 
+# Local Docker environment
+/.env
+
 # PHP dependencies
 /app/vendor/
 
 # Symfony
 /app/var/cache/
 /app/var/log/
-
-# Local environment
 /app/.env.local

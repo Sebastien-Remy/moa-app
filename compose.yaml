@@ -15,6 +15,9 @@ services:
 
     tty: true
 
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+
   nginx:
     image: nginx:1.30-alpine
 
@@ -36,9 +39,9 @@ services:
     image: postgres:18
 
     environment:
-      POSTGRES_DB: moa
-      POSTGRES_USER: moa
-      POSTGRES_PASSWORD: moa_dev_password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
     volumes:
       - database_data:/var/lib/postgresql
