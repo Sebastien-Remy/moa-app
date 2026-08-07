@@ -23,10 +23,13 @@ Its goal is to organize business documents, monitor expenses and revenues, and p
 - PostgreSQL
 - Docker Compose
 
+
 ## Documentation
 
-Project documentation is available in the `docs/` directory.
-
+- [Installation](docs/INSTALLATION.md)
+- [Administration](docs/ADMINISTRATION.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Roadmap](docs/ROADMAP.md)
 ## License
 
 This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
