@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.1 - Production Deployment
+
+Released
+
+### Infrastructure
+
+- Production Docker Compose override
+- Reverse proxy configuration
+- HTTPS deployment
+- Production deployment process validated
+
 ## v0.1 - Foundation
 
 Released

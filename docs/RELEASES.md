@@ -8,7 +8,7 @@ Production Deployment
 
 Status
 
-In Progress
+Released
 
 ## v0.1
 

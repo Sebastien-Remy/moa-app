@@ -93,3 +93,9 @@ Each implementation step must define:
 - Out of scope
 
 No step is considered complete without validation.
+
+## Production
+
+The production server always runs a tagged release.
+
+No development is performed directly on the server.
