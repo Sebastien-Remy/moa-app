@@ -1,22 +1,22 @@
 # Roadmap
 
-## v0.1 - Foundation
+## v0.1.1 - Production Deployment
 
-Goal
+### Goal
 
-Create the initial development infrastructure.
+Make the foundation release deployable on a production server.
 
-Scope
+### Scope
 
-- Docker
-- PHP 8.4
-- Docker Compose
-- Composer
-- Symfony skeleton
-- PostgreSQL
-- Nginx
-- First page
+- Production Docker Compose port override
+- Deployment from GitHub
+- Reverse proxy configuration
+- HTTPS configuration
 
-Success criteria
+### Success criteria
 
-The application starts successfully using Docker Compose and displays the home page.
+The application can be installed from GitHub and displays:
+
+`MOA is running.`
+
+through a secure HTTPS endpoint.

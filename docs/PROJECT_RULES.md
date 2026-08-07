@@ -51,6 +51,12 @@ Docker images should be based on official images whenever possible.
 Community images are adopted only after a conscious architectural decision.
 Business data must never be stored inside containers.
 
+## Docker Compose
+
+compose.yaml is the development configuration.
+
+compose.prod.yaml only contains production overrides.
+
 ## Containers
 
 Each container has a single responsibility.
