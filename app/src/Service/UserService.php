@@ -26,21 +26,11 @@ class UserService
             throw new RuntimeException('An owner already exists.');
         }
 
-        if (!preg_match('/^[a-z0-9._-]+$/', $username)) {
-            throw new InvalidArgumentException(
-                'The username may only contain lowercase letters, numbers, dots, hyphens and underscores.',
-            );
-        }
+        $username = trim($username);
 
-        if (null !== $this->userRepository->findOneBy(['username' => $username])) {
-            throw new InvalidArgumentException('This username is already in use.');
-        }
-
-        if (mb_strlen($plainPassword) < 8) {
-            throw new InvalidArgumentException(
-                'The password must contain at least 8 characters.',
-            );
-        }
+        $this->validateUsername($username);
+        $this->ensureUsernameIsAvailable($username);
+        $this->validatePassword($plainPassword);
 
         $user = new User();
         $user->setUsername($username);
@@ -53,5 +43,82 @@ class UserService
         $this->entityManager->flush();
 
         return $user;
+    }
+
+    public function getOwner(): User
+    {
+        $owner = $this->userRepository->findOwner();
+
+        if (null === $owner) {
+            throw new RuntimeException('No owner account exists.');
+        }
+
+        return $owner;
+    }
+
+    public function recoverOwner(
+        ?string $newUsername,
+        string $plainPassword,
+    ): User {
+        $owner = $this->userRepository->findOwner();
+
+        if (null === $owner) {
+            throw new RuntimeException('No owner account exists.');
+        }
+
+        $username = trim($newUsername ?? '');
+
+        if ('' === $username) {
+            $username = $owner->getUsername();
+        }
+
+        $this->validateUsername($username);
+        $this->ensureUsernameIsAvailable($username, $owner);
+        $this->validatePassword($plainPassword);
+
+        $owner->setUsername($username);
+        $owner->setPassword(
+            $this->passwordHasher->hashPassword($owner, $plainPassword),
+        );
+
+        $this->entityManager->flush();
+
+        return $owner;
+    }
+
+    private function validateUsername(string $username): void
+    {
+        if (!preg_match('/^[a-z0-9._-]+$/', $username)) {
+            throw new InvalidArgumentException(
+                'The username may only contain lowercase letters, numbers, dots, hyphens and underscores.',
+            );
+        }
+    }
+
+    private function validatePassword(string $plainPassword): void
+    {
+        if (mb_strlen($plainPassword) < 8) {
+            throw new InvalidArgumentException(
+                'The password must contain at least 8 characters.',
+            );
+        }
+    }
+
+    private function ensureUsernameIsAvailable(
+        string $username,
+        ?User $ignoredUser = null,
+    ): void {
+        $existingUser = $this->userRepository->findOneBy([
+            'username' => $username,
+        ]);
+
+        if (
+            null !== $existingUser
+            && $existingUser->getId() !== $ignoredUser?->getId()
+        ) {
+            throw new InvalidArgumentException(
+                'This username is already in use.',
+            );
+        }
     }
 }
