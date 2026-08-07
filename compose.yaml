@@ -1,0 +1,47 @@
+services:
+  app:
+    image: moa-app-php
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: moa-app
+
+    volumes:
+      - ./app:/var/www/html
+
+    working_dir: /var/www/html
+
+    tty: true
+
+  nginx:
+    image: nginx:1.30-alpine
+
+    container_name: moa-nginx
+
+    ports:
+
+      - "8080:80"
+
+    volumes:
+
+      - ./app:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+    depends_on:
+      - app
+
+  database:
+    image: postgres:18
+
+    environment:
+      POSTGRES_DB: moa
+      POSTGRES_USER: moa
+      POSTGRES_PASSWORD: moa_dev_password
+
+    volumes:
+      - database_data:/var/lib/postgresql
+
+volumes:
+  database_data:

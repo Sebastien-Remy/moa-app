@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# PHP dependencies
+/app/vendor/
+
+# Symfony
+/app/var/cache/
+/app/var/log/
+
+# Local environment
+/app/.env.local
