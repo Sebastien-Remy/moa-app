@@ -95,6 +95,9 @@ Each implementation step must define:
 - Out of scope
 
 No step is considered complete without validation.
+A documentation update is part of the implementation whenever the feature affects installation, administration or development.
+
+A release is not considered complete until its documentation has been successfully followed on a clean server.
 
 ## Production
 

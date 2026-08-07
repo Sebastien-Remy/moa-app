@@ -26,6 +26,7 @@ Its goal is to organize business documents, monitor expenses and revenues, and p
 
 ## Documentation
 
+- [Server Setup](SERVER-SETUP.md)
 - [Installation](docs/INSTALLATION.md)
 - [Administration](docs/ADMINISTRATION.md)
 - [Architecture](docs/ARCHITECTURE.md)
