@@ -1,4 +1,15 @@
 # Changelog
+## v0.2.0 - Authentication
+
+Released
+
+### Added
+
+- User authentication
+- Login and logout
+- Protected application
+- Owner creation command
+- Owner account recovery command
 
 ## v0.1.1 - Production Deployment
 
