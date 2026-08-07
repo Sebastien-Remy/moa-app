@@ -1,4 +1,29 @@
 # Changelog
+
+## v0.2.1 - Server Setup
+
+Released
+
+### Added
+
+- Complete `.env.example` configuration
+- Secure generation of PostgreSQL and Symfony secrets
+- `SERVER-SETUP.md`
+- Production environment variables for the PHP container
+
+### Fixed
+
+- Symfony now receives `APP_ENV` and `APP_SECRET` from Docker Compose
+- Production Composer installation no longer attempts to load development bundles
+
+### Validated
+
+- Fresh PostgreSQL installation
+- Production Composer installation
+- Database migrations
+- Owner account creation
+- Login and logout over HTTPS
+
 ## v0.2.0 - Authentication
 
 Released

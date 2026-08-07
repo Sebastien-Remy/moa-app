@@ -1,5 +1,23 @@
 # Releases
 
+## v0.2.1
+
+### Name
+
+Server Setup
+
+### Status
+
+Released
+
+### Highlights
+
+- Complete environment template
+- Secure production secret generation
+- Documented server installation procedure
+- Production environment variables injected into PHP
+- Fresh installation validated on a production server
+
 ## v0.2.0
 
 ### Name
