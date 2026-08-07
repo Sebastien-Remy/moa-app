@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login | MOA{% endblock %}
+
+{% block body %}
+    <main>
+        <h1>Sign in to MOA</h1>
+
+        {% if error %}
+            <p>{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+        {% endif %}
+
+        {% if app.user %}
+            <p>
+                You are already signed in as {{ app.user.userIdentifier }}.
+                <a href="{{ path('app_logout') }}">Logout</a>
+            </p>
+        {% else %}
+            <form method="post">
+                <div>
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="_username"
+                        value="{{ last_username }}"
+                        autocomplete="username"
+                        required
+                        autofocus
+                    >
+                </div>
+
+                <div>
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="_password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <input
+                    type="hidden"
+                    name="_csrf_token"
+                    value="{{ csrf_token('authenticate') }}"
+                >
+
+                <button type="submit">Sign in</button>
+            </form>
+        {% endif %}
+    </main>
+{% endblock %}
