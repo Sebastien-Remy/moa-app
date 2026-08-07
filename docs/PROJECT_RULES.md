@@ -65,6 +65,8 @@ Each container has a single responsibility.
 
 Infrastructure and business decisions are discussed separately.
 Infrastructure decisions must not influence the business model.
+Design the data model before generating entities.
+No entity is generated before its structure and responsibilities have been validated.
 
 ## Layers
 
