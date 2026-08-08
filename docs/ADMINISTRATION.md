@@ -28,3 +28,10 @@ docker compose exec app php bin/console doctrine:migrations:migrate
 ```bash
 docker compose exec app php bin/console doctrine:migrations:status
 ```
+
+## Initialize default reference data
+
+Run:
+
+```bash
+docker compose exec app php bin/console app:initialize
