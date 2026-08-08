@@ -102,5 +102,5 @@ A release is not considered complete until its documentation has been successful
 ## Production
 
 The production server always runs a tagged release.
-
 No development is performed directly on the server.
+EasyAdmin is a maintenance tool, not the primary user interface.
