@@ -289,7 +289,7 @@ Create an idempotent initialization command that:
 
 - `StoredFile` represents a unique physical file managed by MOA.
 - `StoredFile` uses a Symfony-generated ULID.
-- `StoredFile` stores the MIME type, size, SHA-256 checksum, and import date.
+- `StoredFile` stores the MIME type, normalized extension, size, SHA-256 checksum, and import date.
 - `DocumentFile` stores the original filename used for each attachment.
 - When an identical file already exists, MOA reuses the existing `StoredFile` instead of creating another physical copy.
 - An identical file may still be attached to another document.
@@ -317,6 +317,15 @@ Create an idempotent initialization command that:
 - No absolute or relative storage path is persisted in `StoredFile`.
 - The storage service is the only component responsible for building the physical path.
 
+#### Stored file extension
+
+- `StoredFile` stores a nullable normalized file extension without the leading dot.
+- Examples: `pdf`, `jpg`, `xml`.
+- The extension is determined by the server during import.
+- User-provided extensions are never trusted without verification.
+- When no safe extension can be determined, `extension` remains null.
+- The physical filename is the `StoredFile` ULID followed by the extension when one is available.
+
 #### File maintenance
 
 - File maintenance is handled by dedicated application services and console commands.
@@ -332,10 +341,8 @@ Create an idempotent initialization command that:
 
 - `Document` uses a Symfony-generated ULID.
 - `issuedAt` is required and stores the date shown on the document.
-- `recordedAt` is required and stores the date on which the document was recorded or recorded in MOA.
+- `recordedAt` is required and stores the date on which the document was recorded in MOA.
 - `validFrom` and `validUntil` are optional and define the document validity period.
-- An open-ended validity period is represented by a null `validUntil`.
-- When both dates are defined, `validUntil` must not be earlier than `validFrom`.
 - `reference` is optional and may contain a title, subject, invoice number, contract number, or another identifying reference.
 - `reference` is not unique.
 - `direction` is required and uses the values `Incoming`, `Outgoing`, and `Internal`.
@@ -362,14 +369,3 @@ Create an idempotent initialization command that:
 - If a database operation fails, all database changes are rolled back.
 - If a new physical file was copied before a later failure, the application service attempts to remove it.
 - Physical file operations are coordinated by application services because the filesystem cannot participate in the database transaction.
-
-### Open decision
-
-#### Stored file extension
-
-The physical extension must be available when the storage service resolves the file path.
-
-Before implementing `StoredFile`, choose one of the following strategies:
-
-- store a nullable `extension` property in `StoredFile`; or
-- derive the extension from the stored MIME type whenever the path is resolved.
