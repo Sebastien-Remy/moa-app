@@ -243,6 +243,13 @@ Create an idempotent initialization command that:
 - `Document`, `Folder`, `DocumentType`, `Status`, `Tag`, `ThirdParty`, `DocumentFile`, and `StoredFile` use Symfony-generated ULIDs.
 - `User` keeps its existing identifier strategy.
 
+#### Entity mutability
+
+- Business entities are mutable throughout their lifecycle.
+- `StoredFile` is immutable once created.
+- Creating a different physical file always creates a new `StoredFile`.
+- Application services are responsible for enforcing this rule.
+
 #### Folder
 
 - `Folder` uses a Symfony-generated ULID.
@@ -284,13 +291,17 @@ Create an idempotent initialization command that:
 - Deleting a `Document` deletes its related `DocumentFile` records.
 - Deleting a `DocumentFile` never deletes its parent `Document`.
 - Deleting a `DocumentFile` does not delete a `StoredFile` that remains referenced elsewhere.
-
+- `DocumentFile` may be created and deleted during the document lifecycle.
+- `StoredFile` remains immutable once created.
+- 
 #### Stored files and duplicate detection
 
 - `StoredFile` represents a unique physical file managed by MOA.
 - `StoredFile` uses a Symfony-generated ULID.
-- `StoredFile` stores the MIME type, normalized extension, size, SHA-256 checksum, and import date.
-- `DocumentFile` stores the original filename used for each attachment.
+- `StoredFile` represents an immutable physical file managed by MOA.
+- A `StoredFile` is fully initialized when it is created.
+- After creation, its MIME type, extension, size, checksum, and import date never change.
+- `StoredFile` stores the MIME type, normalized extension, size, SHA-256 checksum, and import date.- `DocumentFile` stores the original filename used for each attachment.
 - When an identical file already exists, MOA reuses the existing `StoredFile` instead of creating another physical copy.
 - An identical file may still be attached to another document.
 - Duplicate detection does not block legitimate document attachments.
@@ -369,3 +380,5 @@ Create an idempotent initialization command that:
 - If a database operation fails, all database changes are rolled back.
 - If a new physical file was copied before a later failure, the application service attempts to remove it.
 - Physical file operations are coordinated by application services because the filesystem cannot participate in the database transaction.
+- The import pipeline is responsible for creating `StoredFile` instances.
+- Application code must never modify an existing `StoredFile`.
