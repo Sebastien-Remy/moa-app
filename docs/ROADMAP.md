@@ -382,3 +382,11 @@ Create an idempotent initialization command that:
 - Physical file operations are coordinated by application services because the filesystem cannot participate in the database transaction.
 - The import pipeline is responsible for creating `StoredFile` instances.
 - Application code must never modify an existing `StoredFile`.
+
+#### Default data localization
+
+- Default reference data is initially stored in English.
+- Initialization definitions use stable internal keys such as `purchases`, `sales`, and `draft`.
+- User-created and user-renamed values are never translated automatically.
+- A dedicated persistent code or translation model may be introduced before v1 multilingual support.
+- The v0.3 data model remains unchanged.
