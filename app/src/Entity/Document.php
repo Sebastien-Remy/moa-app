@@ -72,9 +72,16 @@ class Document
     #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'documents')]
     private Collection $tags;
 
+    /**
+     * @var Collection<int, DocumentFile>
+     */
+    #[ORM\OneToMany(targetEntity: DocumentFile::class, mappedBy: 'document', orphanRemoval: true)]
+    private Collection $documentFiles;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
+        $this->documentFiles = new ArrayCollection();
     }
 
     public function getId(): ?Ulid
@@ -268,5 +275,29 @@ class Document
                 ->atPath('validUntil')
                 ->addViolation();
         }
+    }
+
+    /**
+     * @return Collection<int, DocumentFile>
+     */
+    public function getDocumentFiles(): Collection
+    {
+        return $this->documentFiles;
+    }
+
+    public function addDocumentFile(DocumentFile $documentFile): static
+    {
+        if (!$this->documentFiles->contains($documentFile)) {
+            $this->documentFiles->add($documentFile);
+        }
+
+        return $this;
+    }
+
+    public function removeDocumentFile(DocumentFile $documentFile): static
+    {
+        $this->documentFiles->removeElement($documentFile);
+
+        return $this;
     }
 }
