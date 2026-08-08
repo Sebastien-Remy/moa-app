@@ -78,7 +78,7 @@ The initial `Document` entity contains:
 
 - `id`
 - `issuedAt`
-- `receivedAt`
+- `recordedAt`
 - `validFrom`
 - `validUntil`
 - `reference`
@@ -95,7 +95,7 @@ The initial `Document` entity contains:
 Rules:
 
 - `issuedAt` is required and stores the date shown on the document.
-- `receivedAt` is required and stores the date on which the document was received or recorded in MOA.
+- `recordedAt` is required and stores the date on which the document was recorded in MOA.
 - `validFrom` and `validUntil` are optional and define the document validity period.
 - An open-ended validity period is represented by a null `validUntil`.
 - When both validity dates are defined, `validUntil` must not be earlier than `validFrom`.
@@ -332,7 +332,7 @@ Create an idempotent initialization command that:
 
 - `Document` uses a Symfony-generated ULID.
 - `issuedAt` is required and stores the date shown on the document.
-- `receivedAt` is required and stores the date on which the document was received or recorded in MOA.
+- `recordedAt` is required and stores the date on which the document was recorded or recorded in MOA.
 - `validFrom` and `validUntil` are optional and define the document validity period.
 - An open-ended validity period is represented by a null `validUntil`.
 - When both dates are defined, `validUntil` must not be earlier than `validFrom`.
