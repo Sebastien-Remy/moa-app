@@ -104,3 +104,14 @@ A release is not considered complete until its documentation has been successful
 The production server always runs a tagged release.
 No development is performed directly on the server.
 EasyAdmin is a maintenance tool, not the primary user interface.
+
+### PHP language features
+
+MOA targets PHP 8.4.
+
+Modern PHP language features should be preferred when they improve readability and type safety, including:
+
+- typed class constants;
+- constructor property promotion where appropriate;
+- readonly properties and classes when applicable;
+- enums instead of string constants for business values.
