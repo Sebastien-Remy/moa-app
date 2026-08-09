@@ -80,5 +80,17 @@ final readonly class StorageService
     public function delete(
         string $relativePath,
     ): void {
+        $absolutePath = $this->getAbsolutePath($relativePath);
+
+        if (!is_file($absolutePath)) {
+            return;
+        }
+
+        if (!unlink($absolutePath)) {
+            throw new RuntimeException(sprintf(
+                'Unable to delete stored file: %s',
+                $relativePath,
+            ));
+        }
     }
 }

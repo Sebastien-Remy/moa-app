@@ -74,8 +74,8 @@ class StoredFile
             throw new InvalidArgumentException('The MIME type cannot be empty.');
         }
 
-        if ($size <= 0) {
-            throw new InvalidArgumentException('The file size must be greater than zero.');
+        if ($size < 0) {
+            throw new InvalidArgumentException('The file size cannot be negative.');
         }
 
         if (!preg_match('/^[a-f0-9]{64}$/', $checksum)) {

@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\StoredFile;
 use App\Repository\StoredFileRepository;
+use App\Service\Result\StoredFileResolution;
 use Doctrine\ORM\EntityManagerInterface;
 use finfo;
 use LogicException;
@@ -24,14 +25,17 @@ final readonly class StoredFileService
     public function resolve(
         string $sourcePath,
         string $originalFilename,
-    ): StoredFile {
+    ): StoredFileResolution {
         $checksum = $this->calculateChecksum($sourcePath);
 
         $existingStoredFile = $this->storedFileRepository
             ->findOneByChecksum($checksum);
 
         if ($existingStoredFile !== null) {
-            return $existingStoredFile;
+            return new StoredFileResolution(
+                storedFile: $existingStoredFile,
+                created: false,
+            );
         }
 
         $storedFile = $this->createStoredFile(
@@ -47,7 +51,10 @@ final readonly class StoredFileService
             relativePath: $this->getRelativePath($storedFile),
         );
 
-        return $storedFile;
+        return new StoredFileResolution(
+            storedFile: $storedFile,
+            created: true,
+        );
     }
 
     /**
