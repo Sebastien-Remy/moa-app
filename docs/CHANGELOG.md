@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.3.0 - Initial Document Structure
+
+Released
+
+### Added
+
+- Initial document domain (`Document`, `Folder`, `DocumentType`, `Status`, `Tag`, `ThirdParty`, `DocumentFile`, `StoredFile`)
+- ULID identifiers for all document-domain entities
+- EasyAdmin dashboard restricted to `ROLE_OWNER`
+- CRUD interfaces for the initial reference entities and documents
+- Idempotent initialization command for default reference data
+- Default folders, document types and statuses
+- Case-insensitive uniqueness validation for reference entities
+- Initial GitHub Wiki documentation for the core concepts
+
+### Infrastructure
+
+- Doctrine migrations for the initial document model
+- Production deployment validated on DigitalOcean
+- v0.3.0 tagged and deployed
+
+
 ## v0.2.1 - Server Setup
 
 Released
