@@ -47,7 +47,7 @@ DocumentImportService
     ├────────► DocumentService
     │              └────────► document creation
     │
-    └────────► DocumentFileService
+    └────────► DocumentFile
                    └────────► attachment creation
 ```
 
@@ -57,6 +57,7 @@ EasyAdmin must not:
 - generate storage filenames;
 - copy files directly into permanent storage;
 - create `StoredFile` records directly;
+- create `Document` records directly;
 - create `DocumentFile` records directly;
 - contain document import business rules.
 
@@ -103,8 +104,6 @@ Create the infrastructure service responsible for physical file storage.
 
 ### Planned work
 
-- generate an internal physical filename;
-- organize the storage directory hierarchy;
 - copy an uploaded file into permanent storage;
 - resolve the absolute path of a stored file;
 - delete a physical file when explicitly requested by the application;
@@ -113,9 +112,8 @@ Create the infrastructure service responsible for physical file storage.
 ### Success criteria
 
 - an imported file can be copied into permanent storage;
-- the original client filename is not used as the physical filename;
-- the service returns the information required to create a `StoredFile`;
-- no entity contains filesystem logic.
+- no entity contains filesystem logic;
+- storage failures are reported through exceptions.
 
 ### Out of scope
 
@@ -138,15 +136,16 @@ Resolve the physical file associated with an import.
 - calculate the SHA-256 checksum of the uploaded file;
 - search for an existing `StoredFile` using the checksum;
 - reuse the existing `StoredFile` when a duplicate is found;
-- otherwise delegate physical storage to `StorageService`;
+- generate the deterministic relative storage path;
+- delegate physical storage to `StorageService`;
 - create the new `StoredFile` record.
 
 ### Success criteria
 
 - importing the same file twice does not create a second physical copy;
 - duplicate detection is based on the SHA-256 checksum;
-- a new `StoredFile` is created only when no matching checksum exists;
-- the original filename and relevant file metadata are preserved in the database.
+- storage paths are deterministic;
+- a new `StoredFile` is created only when no matching checksum exists.
 
 ### Out of scope
 
@@ -157,33 +156,38 @@ Resolve the physical file associated with an import.
 
 ---
 
-## Milestone 4 — Document creation services
+## Milestone 4 — Document creation
 
 ### Goal
 
-Create documents and attachments through dedicated business services.
+Create documents through a dedicated business service and attach stored files through the domain model.
 
 ### Planned work
 
 - implement the minimal document creation operation in `DocumentService`;
-- implement attachment creation in `DocumentFileService`;
 - define the minimal metadata required to create a document;
+- create document attachments using the existing `DocumentFile` constructor;
 - keep entity persistence rules outside EasyAdmin controllers.
+
+A dedicated `DocumentFileService` will not be introduced in v0.4.
+
+The existing `DocumentFile` constructor already enforces the attachment invariant and maintains the entity relationships.
 
 ### Success criteria
 
-- `DocumentService` can create a valid document from explicit input;
-- `DocumentFileService` can link a `Document` to a `StoredFile`;
-- the attachment relationship is represented by `DocumentFile`;
-- neither service performs direct filesystem operations.
+- `DocumentService` can create a valid document;
+- the document creation date is assigned consistently;
+- a `DocumentFile` correctly links a `Document` to a `StoredFile`;
+- attachment creation remains part of the domain model.
 
 ### Out of scope
 
 - complete document lifecycle management;
 - attachment removal;
 - document deletion;
+- attachment replacement;
 - attachment ordering;
-- multiple uploaded files in a single import.
+- multiple uploaded files per document.
 
 ---
 
@@ -195,11 +199,12 @@ Implement the single entry point for document imports.
 
 ### Planned work
 
-- receive the uploaded file and basic document metadata;
-- coordinate checksum calculation and duplicate detection;
-- coordinate permanent file storage;
-- create the document;
-- create the document attachment;
+- receive the uploaded file and document metadata;
+- coordinate checksum calculation;
+- coordinate duplicate detection;
+- coordinate permanent storage;
+- create the document through `DocumentService`;
+- create the attachment through the `DocumentFile` constructor;
 - execute database changes inside a transaction;
 - coordinate cleanup when an import fails.
 
@@ -217,7 +222,7 @@ A failed import must not leave:
 - a partially created document;
 - an orphaned `DocumentFile`;
 - an inconsistent `StoredFile`;
-- an unmanaged physical file created by the failed operation.
+- an unmanaged physical file.
 
 ### Out of scope
 
@@ -238,11 +243,10 @@ Use EasyAdmin as the first interface for the standard import pipeline.
 ### Planned work
 
 - add a file upload field to the document creation workflow;
-- collect the basic document metadata already supported by the domain;
+- collect the document metadata;
 - pass the uploaded file and metadata to `DocumentImportService`;
-- prevent the default EasyAdmin persistence workflow from bypassing the import service;
-- display a clear success or failure message;
-- keep the existing document administration interfaces basic.
+- replace the default EasyAdmin persistence workflow with the standard import pipeline;
+- display a clear success or failure message.
 
 ### Success criteria
 
@@ -250,23 +254,22 @@ From EasyAdmin, the owner can:
 
 1. open the document creation form;
 2. select one local file;
-3. complete the required basic metadata;
+3. complete the required metadata;
 4. submit the form;
-5. find the new document in the document list;
+5. find the new document;
 6. find its associated `DocumentFile`;
 7. verify that its `StoredFile` exists;
-8. verify that the physical file exists in permanent storage.
+8. verify that the physical file exists.
 
 ### Out of scope
 
-- a dedicated document import page;
 - drag and drop;
 - upload progress;
 - multiple attachments;
 - file replacement;
-- inline document preview;
-- public document download;
-- user-facing document management screens.
+- inline preview;
+- public download;
+- end-user document management.
 
 ---
 
@@ -280,39 +283,39 @@ Validate the complete first document import workflow.
 
 #### New file
 
-- import a file that does not yet exist;
-- verify that one physical file is created;
-- verify that one `StoredFile` is created;
-- verify that one `Document` is created;
-- verify that one `DocumentFile` is created.
+- import a new file;
+- verify one physical file;
+- verify one `StoredFile`;
+- verify one `Document`;
+- verify one `DocumentFile`.
 
 #### Duplicate file
 
-- import the same physical file a second time;
-- verify that no second physical copy is created;
-- verify that the existing `StoredFile` is reused;
-- verify that a new `Document` and `DocumentFile` can reference it.
+- import the same file again;
+- verify no second physical copy is created;
+- verify the existing `StoredFile` is reused;
+- verify a new `Document` references the same `StoredFile`.
 
 #### Failed import
 
-- simulate or trigger a storage or persistence failure;
-- verify that the database remains consistent;
-- verify that no unmanaged physical file remains.
+- simulate a storage or persistence failure;
+- verify database consistency;
+- verify no unmanaged physical file remains.
 
 #### Production persistence
 
-- deploy the tagged release on the production server;
+- deploy v0.4;
 - import a test document;
-- recreate or restart the containers;
-- verify that the imported file remains available.
+- recreate the containers;
+- verify the file is still available.
 
 ### Success criteria
 
 The release is complete when:
 
-- all required scenarios have been validated;
+- every validation scenario succeeds;
 - the documentation has been updated;
-- the installation and deployment instructions have been followed successfully;
+- installation instructions have been verified;
 - the production server runs the tagged v0.4 release.
 
 ---
@@ -323,26 +326,26 @@ The implementation of v0.4 must update:
 
 - `ROADMAP.md`;
 - `SERVICES.md`;
-- `IMPORT_PIPELINE.md` if implementation details clarify the existing workflow;
-- `INSTALLATION.md` for storage configuration;
-- `ADMINISTRATION.md` for storage-related operational checks;
+- `IMPORT_PIPELINE.md`;
+- `INSTALLATION.md`;
+- `ADMINISTRATION.md`;
 - `.env.example`;
 - `RELEASES.md`;
-- `CHANGELOG.md` after the work is completed.
+- `CHANGELOG.md`.
 
 ---
 
 ## Release boundaries
 
-v0.4 delivers the smallest complete and reusable document import workflow.
+v0.4 delivers the first complete and reusable document import pipeline.
 
 The following features are intentionally deferred:
 
 - multiple files per document;
 - document preview;
 - document download;
-- document deletion and file cleanup;
-- attachment management;
+- document deletion and cleanup;
+- advanced attachment management;
 - drag and drop;
 - folder imports;
 - email imports;
