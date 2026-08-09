@@ -6,7 +6,7 @@ A service is responsible for coordinating a business operation.
 
 Services contain business rules and orchestrate the work performed by entities, repositories and infrastructure.
 
-Services should remain focused on a single responsibility.
+Each service must have a single, clearly defined responsibility.
 
 ---
 
@@ -22,20 +22,36 @@ Services should remain focused on a single responsibility.
 
 ---
 
+## Storage principles
+
+Physical file storage is considered an infrastructure concern.
+
+The business model never manipulates absolute filesystem paths.
+
+All business services manipulate relative paths only.
+
+Relative paths are part of the business model.
+
+Absolute paths are an infrastructure detail.
+
+`StorageService` is the only service allowed to resolve a relative path into an absolute filesystem path using `DOCUMENT_STORAGE_PATH`.
+
+---
+
 ## UserService
 
-**Responsibility**
+### Responsibility
 
 Manage the owner account.
 
-Current responsibilities:
+Current responsibilities include:
 
-- create the first owner account;
-- recover the owner account;
-- validate usernames;
-- validate passwords;
-- ensure username uniqueness;
-- hash passwords before persistence.
+- creating the first owner account;
+- recovering the owner account;
+- validating usernames;
+- validating passwords;
+- ensuring username uniqueness;
+- hashing passwords before persistence.
 
 `UserService` is currently the reference implementation for business services in MOA.
 
@@ -49,11 +65,13 @@ Coordinates the complete document import pipeline.
 
 Responsibilities include:
 
-- orchestrating the import workflow;
-- coordinating transactions;
+- orchestrating the complete import workflow;
+- coordinating database transactions;
+- delegating physical file management;
 - creating documents;
-- creating document attachments;
-- delegating file storage.
+- creating document attachments.
+
+`DocumentImportService` is the single entry point for every document import, regardless of the import source.
 
 ---
 
@@ -63,38 +81,63 @@ Responsible for physical file storage.
 
 Responsibilities include:
 
-- generating storage filenames;
-- organizing the storage directory hierarchy;
+- storing files at a relative path;
 - copying files;
 - deleting files;
-- resolving physical paths.
+- resolving absolute paths from relative paths;
+- ensuring destination directories exist.
 
-The storage implementation is hidden from the business model.
+The storage implementation is completely hidden from the business model.
+
+`StorageService` never knows about `Document`, `StoredFile` or `DocumentFile`.
+
+It only manipulates files and filesystem paths.
+
+The service is the only component allowed to know the physical storage location configured through `DOCUMENT_STORAGE_PATH`.
+
+The strategy used to generate storage paths is not the responsibility of `StorageService`.
+
+For example:
+
+```text
+Relative path:
+01/K2/01K2ABCDEF1234567890GHJKLM.pdf
+
+Absolute path:
+/srv/moa/storage/01/K2/01K2ABCDEF1234567890GHJKLM.pdf
+```
 
 ---
 
 ### StoredFileService
 
-Responsible for managing physical files.
+Responsible for managing stored files.
 
 Responsibilities include:
 
-- checksum calculation;
-- duplicate detection;
-- creation of `StoredFile` records;
-- deletion of unused stored files.
+- calculating SHA-256 checksums;
+- detecting duplicate files;
+- generating storage relative paths;
+- creating `StoredFile` records;
+- deleting unused stored files.
+
+`StoredFileService` defines the storage naming strategy.
+
+It generates the relative path that is passed to `StorageService`, which performs the physical filesystem operations.
 
 ---
 
 ### DocumentService
 
-Responsible for document lifecycle.
+Responsible for the document lifecycle.
 
 Responsibilities include:
 
 - creating documents;
 - updating document metadata;
 - deleting documents.
+
+`DocumentService` manages business operations related to documents only.
 
 ---
 
@@ -112,7 +155,7 @@ Responsibilities include:
 
 ## Dependency flow
 
-```
+```text
 DocumentImportService
         │
         ├────────► StoredFileService
@@ -124,6 +167,6 @@ DocumentImportService
         └────────► DocumentFileService
 ```
 
-Business services may collaborate with one another when required.
+Business services may collaborate when required.
 
-However, each service remains responsible for a clearly identified business capability.
+However, each service remains responsible for a single, clearly identified business capability.
