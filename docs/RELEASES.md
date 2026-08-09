@@ -8,7 +8,7 @@ First Document Import
 
 ### Status
 
-Ready for production validation
+Released
 
 ### Highlights
 

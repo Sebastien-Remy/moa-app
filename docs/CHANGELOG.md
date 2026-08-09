@@ -1,5 +1,41 @@
 # Changelog
 
+## v0.4.0 - First Document Import
+
+Released
+
+### Added
+
+- First complete document import workflow
+- Dedicated EasyAdmin document import interface
+- `DocumentImportService`
+- `DocumentImportData`
+- `DocumentImportFormData`
+- `DocumentImportType`
+- `StorageService`
+- `StoredFileService`
+- `StoredFileResolution`
+- Physical document storage outside the database
+- Deterministic storage path generation based on ULIDs
+- SHA-256 checksum calculation
+- Automatic duplicate detection for stored files
+- Transactional document import with automatic rollback
+- Automatic cleanup of newly stored files after failed imports
+
+### Changed
+
+- Document creation is now performed through `DocumentService`
+- EasyAdmin document creation replaced by the dedicated import workflow
+- Import pipeline refactored to use immutable DTOs between the UI and application services
+
+### Infrastructure
+
+- PHP `intl` extension added to the Docker image
+- Production deployment validated on DigitalOcean
+- Production storage permissions documented and validated
+- Production cache rebuild procedure validated
+- v0.4.0 tagged and deployed
+
 ## v0.3.0 - Initial Document Structure
 
 Released
