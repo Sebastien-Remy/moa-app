@@ -97,6 +97,8 @@ The service is the only component allowed to know the physical storage location 
 
 The strategy used to generate storage paths is not the responsibility of `StorageService`.
 
+The same relative path always resolves to the same absolute filesystem path.
+
 For example:
 
 ```text
@@ -105,6 +107,30 @@ Relative path:
 
 Absolute path:
 /srv/moa/storage/01/K2/01K2ABCDEF1234567890GHJKLM.pdf
+```
+
+---
+
+### Stored file path
+
+A `StoredFile` path is deterministic.
+
+It is always derived from the `StoredFile` identifier and never from the original filename.
+
+The same `StoredFile` always resolves to the same relative storage path.
+
+The relative path is never persisted in the database.
+
+It is calculated whenever needed by applying the project's storage naming strategy.
+
+Example:
+
+```text
+StoredFile ID:
+01K2ABCDEF1234567890GHJKLM
+
+Relative path:
+01/K2/01K2ABCDEF1234567890GHJKLM.pdf
 ```
 
 ---
@@ -121,7 +147,7 @@ Responsibilities include:
 - creating `StoredFile` records;
 - deleting unused stored files.
 
-`StoredFileService` defines the storage naming strategy.
+`StoredFileService` applies the project's storage naming strategy.
 
 It generates the relative path that is passed to `StorageService`, which performs the physical filesystem operations.
 
