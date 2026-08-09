@@ -1,0 +1,30 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+Import document
+{% endblock %}
+
+{% block main %}
+<div class="content-panel">
+    <div class="content-panel-body">
+        {{ form_start(form) }}
+
+        {{ form_row(form.file) }}
+        {{ form_row(form.issuedAt) }}
+        {{ form_row(form.direction) }}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-file-import"></i>
+                Import document
+            </button>
+
+            <a href="{{ documentsIndexUrl }}" class="btn btn-secondary">
+                Cancel
+            </a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

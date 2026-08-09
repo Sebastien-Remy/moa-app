@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
+use App\DTO\DocumentImportData;
 use App\Entity\Document;
 use App\Entity\DocumentFile;
-use App\Enum\DocumentDirection;
 use App\Service\Result\StoredFileResolution;
 use Doctrine\ORM\EntityManagerInterface;
 use Throwable;
@@ -23,34 +23,28 @@ final readonly class DocumentImportService
      * Import a source file and create the corresponding document.
      */
     public function import(
-        string $sourcePath,
-        string $originalFilename,
-        \DateTimeImmutable $issuedAt,
-        DocumentDirection $direction,
+        DocumentImportData $data,
     ): Document {
         $resolution = null;
 
         try {
             return $this->entityManager->wrapInTransaction(
                 function () use (
-                    $sourcePath,
-                    $originalFilename,
-                    $issuedAt,
-                    $direction,
+                    $data,
                     &$resolution,
                 ): Document {
                     $resolution = $this->storedFileService->resolve(
-                        sourcePath: $sourcePath,
-                        originalFilename: $originalFilename,
+                        sourcePath: $data->getSourcePath(),
+                        originalFilename: $data->getOriginalFilename(),
                     );
 
                     $document = $this->documentService->create(
-                        issuedAt: $issuedAt,
-                        direction: $direction,
+                        issuedAt: $data->getIssuedAt(),
+                        direction: $data->getDirection(),
                     );
 
                     $documentFile = new DocumentFile(
-                        originalName: $originalFilename,
+                        originalName: $data->getOriginalFilename(),
                         document: $document,
                         storedFile: $resolution->getStoredFile(),
                     );
