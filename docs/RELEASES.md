@@ -1,6 +1,6 @@
 # Releases
 
-## v0.4
+## v0.4.0
 
 ### Name
 
@@ -8,25 +8,28 @@ First Document Import
 
 ### Status
 
-Planned
+Ready for production validation
 
 ### Highlights
 
-- First operational document import workflow
-- Physical file upload from EasyAdmin
+- First complete document import workflow
+- Dedicated EasyAdmin document import interface
 - Standard document import pipeline
-- Configurable file storage outside the database
+- Configurable persistent document storage
+- Physical file storage outside the database
 - `StorageService`
 - `StoredFileService`
+- `StoredFileResolution`
 - `DocumentService`
-- `DocumentFileService`
 - `DocumentImportService`
+- `DocumentImportData`
+- `DocumentImportFormData`
+- Deterministic storage paths based on ULIDs
 - SHA-256 duplicate detection
 - Stored file deduplication
 - Transactional document import
+- Automatic cleanup after failed imports
 - First production-ready document attachment workflow
-
----
 
 ## v0.3.0
 
