@@ -45,6 +45,13 @@ final readonly class StorageService
             ));
         }
 
+        if ($this->exists($relativePath)) {
+            throw new RuntimeException(sprintf(
+                'Destination file already exists: %s',
+                $relativePath,
+            ));
+        }
+
         $destinationPath = $this->getAbsolutePath($relativePath);
         $destinationDirectory = dirname($destinationPath);
 

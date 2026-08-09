@@ -35,7 +35,7 @@ class StoredFile
     private ?string $extension;
 
     #[ORM\Column(type: Types::BIGINT)]
-    #[Assert\Positive]
+    #[Assert\PositiveOrZero]
     private int $size;
 
     #[ORM\Column(length: 64, unique: true)]
