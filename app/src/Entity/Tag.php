@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\TagRepository;
+
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -10,8 +11,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Validator\NormalizedUnique;
 
 #[ORM\Entity(repositoryClass: TagRepository::class)]
+#[NormalizedUnique(
+    field: 'name',
+    message: 'A tag with this name already exists.'
+)]
 class Tag
 {
     public const string DEFAULT_FA_ICON = 'fa-tag';
@@ -44,7 +50,11 @@ class Tag
     /**
      * @var Collection<int, Document>
      */
-    #[ORM\ManyToMany(targetEntity: Document::class, mappedBy: 'tags')]
+    #[ORM\ManyToMany(
+        targetEntity: Document::class,
+        mappedBy: 'tags',
+        fetch: 'EXTRA_LAZY'
+    )]
     private Collection $documents;
 
     public function __construct()
@@ -143,5 +153,10 @@ class Tag
         }
 
         return $this;
+    }
+
+    public function getDocumentCount(): int
+    {
+        return $this->documents->count();
     }
 }

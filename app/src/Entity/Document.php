@@ -54,15 +54,15 @@ class Document
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Folder $folder = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'documents')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?DocumentType $documentType = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'documents')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Status $status = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'documents')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?ThirdParty $thirdParty = null;
 

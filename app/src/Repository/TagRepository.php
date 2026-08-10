@@ -15,4 +15,13 @@ class TagRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Tag::class);
     }
+    public function existsByEquivalentName(string $name): bool
+    {
+        return (int) $this->createQueryBuilder('e')
+                ->select('COUNT(e.id)')
+                ->where('LOWER(TRIM(e.name)) = LOWER(TRIM(:name))')
+                ->setParameter('name', $name)
+                ->getQuery()
+                ->getSingleScalarResult() > 0;
+    }
 }

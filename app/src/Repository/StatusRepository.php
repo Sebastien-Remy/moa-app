@@ -5,7 +5,6 @@ namespace App\Repository;
 use App\Entity\Status;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\String\Slugger\AsciiSlugger;
 
 /**
  * @extends ServiceEntityRepository<Status>
@@ -19,24 +18,11 @@ class StatusRepository extends ServiceEntityRepository
 
     public function existsByEquivalentName(string $name): bool
     {
-        $slugger = new AsciiSlugger();
-
-        $normalizedName = $slugger
-            ->slug(trim($name))
-            ->lower()
-            ->toString();
-
-        foreach ($this->findAll() as $status) {
-            $existingName = $slugger
-                ->slug($status->getName())
-                ->lower()
-                ->toString();
-
-            if ($existingName === $normalizedName) {
-                return true;
-            }
-        }
-
-        return false;
+        return (int) $this->createQueryBuilder('e')
+                ->select('COUNT(e.id)')
+                ->where('LOWER(TRIM(e.name)) = LOWER(TRIM(:name))')
+                ->setParameter('name', $name)
+                ->getQuery()
+                ->getSingleScalarResult() > 0;
     }
 }

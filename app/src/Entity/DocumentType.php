@@ -3,13 +3,20 @@
 namespace App\Entity;
 
 use App\Repository\DocumentTypeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Validator\NormalizedUnique;
 
 #[ORM\Entity(repositoryClass: DocumentTypeRepository::class)]
+#[NormalizedUnique(
+    field: 'name',
+    message: 'A document type with this name already exists.'
+)]
 class DocumentType
 {
     public const string DEFAULT_FA_ICON = 'fa-file-lines';
@@ -38,6 +45,20 @@ class DocumentType
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
+
+
+    #[ORM\OneToMany(
+        targetEntity: Document::class,
+        mappedBy: 'documentType',
+        fetch: 'EXTRA_LAZY'
+    )]
+    private Collection $documents;
+
+    public function __construct()
+    {
+        $this->documents = new ArrayCollection();
+    }
+
 
     public function getId(): ?Ulid
     {
@@ -98,6 +119,19 @@ class DocumentType
         $this->notes = $notes !== '' ? $notes : null;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Document>
+     */
+    public function getDocuments(): Collection
+    {
+        return $this->documents;
+    }
+
+    public function getDocumentCount(): int
+    {
+        return $this->documents->count();
     }
 
     public function __toString(): string
