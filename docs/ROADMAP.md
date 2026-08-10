@@ -1,35 +1,53 @@
 # Roadmap
 
-## v0.5 - Rich Document Import
+## v0.5 – EasyAdmin Usability
 
 ### Status
 
 Planned
 
-### Objectives
+### Goal
 
-Provide a complete and user-friendly document import workflow.
+Turn EasyAdmin into a practical daily administration interface for managing documents.
 
 ### Features
 
-- Complete the EasyAdmin document import form
-- Support all editable `Document` fields during import
-- Improve the import page layout
-- Introduce a clean Bootstrap-based interface
-- Use Font Awesome icons where appropriate
-- Fix the default document date behaviour
+#### Reference data management
+
+Validate and improve the CRUD interfaces for all reference entities:
+
+- Folder
+- Third Party
+- Tag
+- Status
+- Document Type
+
+Improve their usability, consistency and navigation within EasyAdmin.
+
+#### Document management
+
+- Improve the document list readability
+- Display all important document information
+- Improve sorting and filtering
+- Open the attached document directly from the list
+- Complete the document form
+- Support every editable `Document` field
+- Improve the page layout
+- Group related fields logically
+
+#### Document import
+
+- Complete the import workflow
+- Allow editing every document property during import
+- Fix the default document date
 - Allow importing documents issued before the current date
-- Improve the document list
-- Display folder, third party, amount, tags and key metadata
-- Open the attached document directly from EasyAdmin
-- Improve the document detail page
 
-### Out of scope
+#### User interface
 
-- Orphan file detection
-- Storage consistency verification
-- Maintenance commands
-- File deduplication repair tools
+- Improve the overall EasyAdmin experience
+- Introduce a cleaner Bootstrap-based layout
+- Use Font Awesome icons where appropriate
+- Harmonize the appearance of EasyAdmin pages
 
 ---
 
