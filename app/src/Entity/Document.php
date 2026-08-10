@@ -50,7 +50,7 @@ class Document
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'documents')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Folder $folder = null;
 

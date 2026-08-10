@@ -3,13 +3,20 @@
 namespace App\Entity;
 
 use App\Repository\FolderRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Validator\NormalizedUnique;
 
 #[ORM\Entity(repositoryClass: FolderRepository::class)]
+#[NormalizedUnique(
+    field: 'name',
+    message: 'A folder with this name already exists.'
+)]
 class Folder
 {
     public const string DEFAULT_FA_ICON = 'fa-folder';
@@ -38,6 +45,18 @@ class Folder
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
+
+    #[ORM\OneToMany(
+        targetEntity: Document::class,
+        mappedBy: 'folder',
+        fetch: 'EXTRA_LAZY'
+    )]
+    private Collection $documents;
+
+    public function __construct()
+    {
+        $this->documents = new ArrayCollection();
+    }
 
     public function getId(): ?Ulid
     {
@@ -98,6 +117,40 @@ class Folder
         $this->notes = $notes !== '' ? $notes : null;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Document>
+     */
+    public function getDocuments(): Collection
+    {
+        return $this->documents;
+    }
+
+    public function addDocument(Document $document): static
+    {
+        if (!$this->documents->contains($document)) {
+            $this->documents->add($document);
+            $document->setFolder($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDocument(Document $document): static
+    {
+        if ($this->documents->removeElement($document)) {
+            if ($document->getFolder() === $this) {
+                $document->setFolder(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDocumentCount(): int
+    {
+        return $this->documents->count();
     }
 
     public function __toString(): string
