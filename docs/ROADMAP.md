@@ -49,6 +49,19 @@ Improve their usability, consistency and navigation within EasyAdmin.
 - Use Font Awesome icons where appropriate
 - Harmonize the appearance of EasyAdmin pages
 
+
+### Technical debt
+
+The `NormalizedUnique` validator currently performs the comparison in PHP by
+loading the existing reference entities and applying the same normalization
+rules (trim, lowercase, accent removal) as the application.
+
+This keeps the validation logic simple and consistent while the database still
+uses expression-based unique indexes.
+
+A future release will introduce a persisted `normalized_name` column (or an
+equivalent database strategy) to provide the same guarantees directly at the
+database level and allow efficient SQL-based validation.
 ---
 
 # Roadmap v0.6 — Banking and Financial Analysis Foundation
