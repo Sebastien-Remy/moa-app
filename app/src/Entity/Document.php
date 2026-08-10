@@ -29,7 +29,7 @@ class Document
     #[ORM\Column(enumType: DocumentDirection::class)]
     private DocumentDirection $direction = DocumentDirection::Incoming;
 
-    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Assert\NotNull]
     private ?\DateTimeImmutable $recordedAt = null;
 
