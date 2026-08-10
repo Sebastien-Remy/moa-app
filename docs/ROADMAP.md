@@ -1,67 +1,66 @@
 # Roadmap
 
-## v0.5 – EasyAdmin Usability
+## Roadmap v0.5
 
-### Status
+Status: In progress
 
-Planned
+## Document management
 
-### Goal
+### ✅ Completed
 
-Turn EasyAdmin into a practical daily administration interface for managing documents.
+- [x] Improve the Document CRUD list
+    - Recorded At column (default sort)
+    - Document Date column
+    - Direction with Font Awesome icon
+    - Better amount display
+    - Better tag display
+    - Null values displayed as "—"
 
-### Features
+- [x] Improve the Document edit form
+    - Two-column layout
+    - PDF preview panel
+    - Secure document preview
 
-#### Reference data management
+- [x] Add a technical Detail page
+    - Raw document information
+    - UUID
+    - Technical timestamps
+    - Metadata
 
-Validate and improve the CRUD interfaces for all reference entities:
+- [x] Integrate document creation into the CRUD
+    - Remove the temporary import workflow
+    - Use EasyAdmin "New"
+    - Upload the file during creation
+    - Store the document and file in a single transaction
 
-- Folder
-- Third Party
-- Tag
-- Status
-- Document Type
+- [x] Add "Open file…" action
+    - Opens the original document in a new tab
+    - Secure route
 
-Improve their usability, consistency and navigation within EasyAdmin.
+- [x] Improve the Document entity
+    - recordedAt stored as DATETIME
+    - Business dates remain DATE only
 
-#### Document management
+- [x] Refactor document storage
+    - Introduce DocumentStorageService
+    - Remove obsolete import classes and workflow
 
-- Improve the document list readability
-- Display all important document information
-- Improve sorting and filtering
-- Open the attached document directly from the list
-- Complete the document form
-- Support every editable `Document` field
-- Improve the page layout
-- Group related fields logically
+---
 
-#### Document import
+## Remaining
 
-- Complete the import workflow
-- Allow editing every document property during import
-- Fix the default document date
-- Allow importing documents issued before the current date
+### User interface polish
 
-#### User interface
+- [ ] Improve the "Create document" form
+    - Better field grouping
+    - Better visual hierarchy
+    - Minor UI refinements
 
-- Improve the overall EasyAdmin experience
-- Introduce a cleaner Bootstrap-based layout
-- Use Font Awesome icons where appropriate
-- Harmonize the appearance of EasyAdmin pages
+### Maintenance
 
-
-### Technical debt
-
-The `NormalizedUnique` validator currently performs the comparison in PHP by
-loading the existing reference entities and applying the same normalization
-rules (trim, lowercase, accent removal) as the application.
-
-This keeps the validation logic simple and consistent while the database still
-uses expression-based unique indexes.
-
-A future release will introduce a persisted `normalized_name` column (or an
-equivalent database strategy) to provide the same guarantees directly at the
-database level and allow efficient SQL-based validation.
+- [ ] General cleanup
+- [ ] Remove obsolete files related to the old import workflow
+- [ ] Review naming consistency
 ---
 
 # Roadmap v0.6 — Banking and Financial Analysis Foundation
@@ -363,4 +362,3 @@ At the end of **v0.6**, MOA will have a stable financial model capable of suppor
 ## TODO:
 ### Document
 setCurrency for totalAmount and use it in EasyAdmin.
-les champs dates de documents ne devra pas avoir d'heure a part la date de création
