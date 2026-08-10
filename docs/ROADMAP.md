@@ -361,4 +361,6 @@ At the end of **v0.6**, MOA will have a stable financial model capable of suppor
 
 
 ## TODO:
+### Document
 setCurrency for totalAmount and use it in EasyAdmin.
+les champs dates de documents ne devra pas avoir d'heure a part la date de création
