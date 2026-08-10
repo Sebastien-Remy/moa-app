@@ -5,39 +5,34 @@ namespace App\Controller\Admin;
 use App\Entity\Document;
 use App\Entity\Tag;
 use App\Enum\DocumentDirection;
-use App\Form\DocumentImportType;
-use App\Form\Model\DocumentImportFormData;
 use App\Service\DocumentStorageService;
 use App\Service\StorageService;
 use App\Service\StoredFileService;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
-use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 final class DocumentCrudController extends AbstractCrudController
 {
     public function __construct(
-        private readonly DocumentStorageService $documentImportService,
-        private readonly AdminUrlGenerator      $adminUrlGenerator,
-        private readonly StoredFileService      $storedFileService,
-        private readonly StorageService         $storageService,
+        private readonly DocumentStorageService $documentStorageService,
+        private readonly StoredFileService $storedFileService,
+        private readonly StorageService $storageService,
     ) {
     }
 
@@ -67,31 +62,19 @@ final class DocumentCrudController extends AbstractCrudController
             );
     }
 
-    public function configureFields(
-        string $pageName,
-    ): iterable {
+    public function configureFields(string $pageName): iterable
+    {
         // Index fields
 
-      yield DateTimeField::new('recordedAt', 'Recorded At')
-          ->setFormat('dd/MM/yyyy HH:mm')
-          ->onlyOnIndex();
+        yield DateTimeField::new('recordedAt', 'Recorded At')
+            ->setFormat('dd/MM/yyyy HH:mm')
+            ->onlyOnIndex();
 
-        yield DateTimeField::new('issuedAt', 'Document Date')
+        yield DateField::new('issuedAt', 'Document Date')
             ->setFormat('dd/MM/yyyy')
             ->onlyOnIndex();
 
         yield TextField::new('directionDisplay', 'Direction')
-            ->formatValue(
-                static function ($value, Document $document): string {
-                    $direction = $document->getDirection();
-
-                    return sprintf(
-                        '<i class="fa-solid %s me-1"></i> %s',
-                        $direction->getFaIcon(),
-                        $direction->getLabel(),
-                    );
-                }
-            )
             ->renderAsHtml()
             ->onlyOnIndex();
 
@@ -140,14 +123,17 @@ final class DocumentCrudController extends AbstractCrudController
                     return implode(
                         ', ',
                         $value
-                            ->map(static fn (Tag $tag) => $tag->getName())
+                            ->map(
+                                static fn (Tag $tag): string => $tag->getName()
+                            )
                             ->toArray()
                     );
                 }
             )
             ->onlyOnIndex();
 
-        // New
+        // New fields
+
         yield Field::new('uploadedFile', 'File')
             ->setFormType(FileType::class)
             ->setFormTypeOption('mapped', false)
@@ -156,7 +142,7 @@ final class DocumentCrudController extends AbstractCrudController
 
         // New / Edit fields
 
-        yield DateTimeField::new('issuedAt', 'Document date')
+        yield DateField::new('issuedAt', 'Document Date')
             ->setFormat('dd/MM/yyyy')
             ->onlyOnForms();
 
@@ -191,28 +177,79 @@ final class DocumentCrudController extends AbstractCrudController
         yield AssociationField::new('tags', 'Tags')
             ->onlyOnForms();
 
-        yield DateTimeField::new('validFrom', 'Valid from')
+        yield DateField::new('validFrom', 'Valid From')
             ->setFormat('dd/MM/yyyy')
             ->onlyOnForms();
 
-        yield DateTimeField::new('validUntil', 'Valid until')
+        yield DateField::new('validUntil', 'Valid Until')
             ->setFormat('dd/MM/yyyy')
             ->onlyOnForms();
 
         yield TextareaField::new('notes', 'Notes')
             ->onlyOnForms();
+
+        // Detail fields
+
+        yield TextField::new('id', 'UUID')
+            ->onlyOnDetail();
+
+        yield DateTimeField::new('recordedAt', 'Recorded At')
+            ->setFormat('dd/MM/yyyy HH:mm')
+            ->onlyOnDetail();
+
+        yield DateField::new('issuedAt', 'Document Date')
+            ->setFormat('dd/MM/yyyy')
+            ->onlyOnDetail();
+
+        yield TextField::new('directionDisplay', 'Direction')
+            ->renderAsHtml()
+            ->onlyOnDetail();
+
+        yield TextField::new('reference', 'Reference')
+            ->onlyOnDetail();
+
+        yield AssociationField::new('thirdParty', 'Third Party')
+            ->onlyOnDetail();
+
+        yield AssociationField::new('folder', 'Folder')
+            ->onlyOnDetail();
+
+        yield AssociationField::new('documentType', 'Document Type')
+            ->onlyOnDetail();
+
+        yield AssociationField::new('status', 'Status')
+            ->onlyOnDetail();
+
+        yield MoneyField::new('totalAmount', 'Amount')
+            ->setCurrency('EUR')
+            ->setStoredAsCents()
+            ->onlyOnDetail();
+
+        yield AssociationField::new('tags', 'Tags')
+            ->onlyOnDetail();
+
+        yield DateField::new('validFrom', 'Valid From')
+            ->setFormat('dd/MM/yyyy')
+            ->onlyOnDetail();
+
+        yield DateField::new('validUntil', 'Valid Until')
+            ->setFormat('dd/MM/yyyy')
+            ->onlyOnDetail();
+
+        yield TextareaField::new('notes', 'Notes')
+            ->onlyOnDetail();
     }
+
     public function configureActions(
         Actions $actions,
     ): Actions {
-
-        $viewFile = Action::new(
-            'viewFile',
-            'View',
-            'fa fa-file',
+        $openFile = Action::new(
+            'openFile',
+            'Open file…',
+            'fa-solid fa-file-pdf',
         )
             ->linkToRoute(
-                'admin_document_view_file',
+                'admin_document_open_file',
                 static fn (Document $document): array => [
                     'id' => (string) $document->getId(),
                 ],
@@ -223,11 +260,16 @@ final class DocumentCrudController extends AbstractCrudController
             ]);
 
         return $actions
-            ->add(Crud::PAGE_INDEX, $viewFile);
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_INDEX, $openFile);
     }
 
-    #[AdminRoute('/{id}/file')]
-    public function viewFile(Document $document): Response
+    #[AdminRoute(
+        path: '/{id}/file',
+        name: 'open_file',
+    )]
+    public function openFile(Document $document): Response
+
     {
         $documentFile = $document->getDocumentFiles()->first();
 
@@ -260,55 +302,9 @@ final class DocumentCrudController extends AbstractCrudController
         );
     }
 
-    #[AdminRoute('/import')]
-    public function importDocument(
-        Request $request,
-    ): Response {
-        $formData = new DocumentImportFormData();
-
-        $form = $this->createForm(
-            DocumentImportType::class,
-            $formData,
-        );
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $document = $this->documentImportService->import(
-                $formData->toDocumentImportData(),
-            );
-
-            $this->addFlash(
-                'success',
-                'The document was imported successfully.',
-            );
-
-            $url = $this->adminUrlGenerator
-                ->setController(self::class)
-                ->setAction(Action::DETAIL)
-                ->setEntityId((string) $document->getId())
-                ->generateUrl();
-
-            return new RedirectResponse($url);
-        }
-
-        $documentsIndexUrl = $this->adminUrlGenerator
-            ->setController(self::class)
-            ->setAction(Action::INDEX)
-            ->generateUrl();
-
-        return $this->render(
-            'admin/document/import.html.twig',
-            [
-                'form' => $form,
-                'documentsIndexUrl' => $documentsIndexUrl,
-            ],
-        );
-    }
-
     public function persistEntity(
         EntityManagerInterface $entityManager,
-                               $entityInstance,
+        $entityInstance,
     ): void {
         if (!$entityInstance instanceof Document) {
             parent::persistEntity($entityManager, $entityInstance);
@@ -316,15 +312,25 @@ final class DocumentCrudController extends AbstractCrudController
             return;
         }
 
-        $request = $this->getContext()?->getRequest();
+        $uploadedFile = $this->getUploadedFile();
 
-        if ($request === null) {
+        $this->documentStorageService->store(
+            $entityInstance,
+            $uploadedFile,
+        );
+    }
+
+    private function getUploadedFile(): UploadedFile
+    {
+        $context = $this->getContext();
+
+        if ($context === null) {
             throw new \LogicException(
-                'Unable to access the current EasyAdmin request.',
+                'Unable to access the current EasyAdmin context.',
             );
         }
 
-        $formName = $this->getContext()?->getEntity()->getName();
+        $formName = $context->getEntity()->getName();
 
         if ($formName === null) {
             throw new \LogicException(
@@ -332,7 +338,11 @@ final class DocumentCrudController extends AbstractCrudController
             );
         }
 
-        $formFiles = $request->files->all($formName);
+        $formFiles = $context
+            ->getRequest()
+            ->files
+            ->all($formName);
+
         $uploadedFile = $formFiles['uploadedFile'] ?? null;
 
         if (!$uploadedFile instanceof UploadedFile) {
@@ -341,9 +351,6 @@ final class DocumentCrudController extends AbstractCrudController
             );
         }
 
-        $this->documentImportService->store(
-            $entityInstance,
-            $uploadedFile,
-        );
+        return $uploadedFile;
     }
 }
