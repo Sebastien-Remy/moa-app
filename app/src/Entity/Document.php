@@ -82,6 +82,7 @@ class Document
     {
         $this->tags = new ArrayCollection();
         $this->documentFiles = new ArrayCollection();
+        $this->recordedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?Ulid
@@ -104,6 +105,14 @@ class Document
     public function getDirection(): DocumentDirection
     {
         return $this->direction;
+    }
+    public function getDirectionDisplay(): string
+    {
+        return sprintf(
+            '<i class="fa-solid %s me-1"></i> %s',
+            $this->direction->getFaIcon(),
+            $this->direction->getLabel(),
+        );
     }
 
     public function setDirection(DocumentDirection $direction): static
