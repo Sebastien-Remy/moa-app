@@ -2,65 +2,69 @@
 
 ## Roadmap v0.5
 
-Status: In progress
+Status: Completed ✅
 
 ## Document management
 
 ### ✅ Completed
 
 - [x] Improve the Document CRUD list
-    - Recorded At column (default sort)
-    - Document Date column
-    - Direction with Font Awesome icon
-    - Better amount display
-    - Better tag display
-    - Null values displayed as "—"
+  - Recorded At column (default sort)
+  - Document Date column
+  - Direction with Font Awesome icon
+  - Better amount display
+  - Better tag display
+  - Null values displayed as "—"
 
 - [x] Improve the Document edit form
-    - Two-column layout
-    - PDF preview panel
-    - Secure document preview
+  - Two-column layout
+  - PDF preview panel
+  - Secure document preview
 
 - [x] Add a technical Detail page
-    - Raw document information
-    - UUID
-    - Technical timestamps
-    - Metadata
+  - Raw document information
+  - UUID
+  - Technical timestamps
+  - Metadata
 
 - [x] Integrate document creation into the CRUD
-    - Remove the temporary import workflow
-    - Use EasyAdmin "New"
-    - Upload the file during creation
-    - Store the document and file in a single transaction
+  - Remove the temporary import workflow
+  - Use EasyAdmin "New"
+  - Upload the file during creation
+  - Store the document and file in a single transaction
 
 - [x] Add "Open file…" action
-    - Opens the original document in a new tab
-    - Secure route
+  - Opens the original document in a new tab
+  - Secure route
 
 - [x] Improve the Document entity
-    - recordedAt stored as DATETIME
-    - Business dates remain DATE only
+  - recordedAt stored as DATETIME
+  - Business dates remain DATE only
 
 - [x] Refactor document storage
-    - Introduce DocumentStorageService
-    - Remove obsolete import classes and workflow
+  - Introduce DocumentStorageService
+  - Simplify StoredFileService
+  - Remove obsolete import workflow
+
+- [x] Configure technical CRUDs
+  - DocumentFile CRUD (Index / Detail / Delete)
+  - StoredFile CRUD (Index / Detail / Delete)
+  - Technical section in the administration menu
+  - Open original stored file from the technical interface
 
 ---
 
-## Remaining
+## Notes
 
-### User interface polish
+v0.5 establishes the complete document management foundation of MOA:
+- secure file storage
+- deduplication
+- document/file separation
+- technical administration
+- improved EasyAdmin experience
 
-- [ ] Improve the "Create document" form
-    - Better field grouping
-    - Better visual hierarchy
-    - Minor UI refinements
+The next milestone focuses on document analysis and accounting features.
 
-### Maintenance
-
-- [ ] General cleanup
-- [ ] Remove obsolete files related to the old import workflow
-- [ ] Review naming consistency
 ---
 
 # Roadmap v0.6 — Banking and Financial Analysis Foundation
