@@ -37,18 +37,6 @@ class DashboardController extends AbstractDashboardController
             'fa-solid fa-file-lines',
         );
 
-        yield MenuItem::linkTo(
-            DocumentFileCrudController::class,
-            'Document Files',
-            'fa-solid fa-paperclip',
-        );
-
-        yield MenuItem::linkTo(
-            StoredFileCrudController::class,
-            'Stored Files',
-            'fa-solid fa-hard-drive',
-        );
-
         yield MenuItem::section('Reference Data');
 
         yield MenuItem::linkTo(
@@ -81,6 +69,23 @@ class DashboardController extends AbstractDashboardController
             'fa-solid fa-building',
         );
 
+        yield MenuItem::subMenu(
+            'Technical',
+            'fa-solid fa-screwdriver-wrench',
+        )
+            ->setSubItems([
+                MenuItem::linkTo(
+                    DocumentFileCrudController::class,
+                    'Document Files',
+                    'fa-solid fa-paperclip',
+                ),
+                MenuItem::linkTo(
+                    StoredFileCrudController::class,
+                    'Stored Files',
+                    'fa-solid fa-hard-drive',
+                ),
+            ]);
+
         yield MenuItem::section('Administration');
 
         yield MenuItem::linkTo(
@@ -88,5 +93,7 @@ class DashboardController extends AbstractDashboardController
             'Users',
             'fa-solid fa-users',
         );
+
+
     }
 }
