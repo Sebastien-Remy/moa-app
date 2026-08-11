@@ -197,4 +197,20 @@ final readonly class StoredFileService
             ));
         }
     }
+
+    public function getAbsolutePath(
+        StoredFile $storedFile,
+    ): string {
+        $relativePath = $this->getRelativePath($storedFile);
+
+        if (!$this->storageService->exists($relativePath)) {
+            throw new RuntimeException(
+                'The stored file could not be found.',
+            );
+        }
+
+        return $this->storageService->getAbsolutePath(
+            $relativePath,
+        );
+    }
 }

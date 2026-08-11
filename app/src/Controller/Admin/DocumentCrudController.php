@@ -281,19 +281,16 @@ final class DocumentCrudController extends AbstractCrudController
 
         $storedFile = $documentFile->getStoredFile();
 
-        $relativePath = $this->storedFileService->getRelativePath(
-            $storedFile,
-        );
-
-        if (!$this->storageService->exists($relativePath)) {
+        try {
+            $absolutePath = $this->storedFileService->getAbsolutePath(
+                $storedFile,
+            );
+        } catch (\RuntimeException $exception) {
             throw $this->createNotFoundException(
-                'The stored file could not be found.',
+                $exception->getMessage(),
+                $exception,
             );
         }
-
-        $absolutePath = $this->storageService->getAbsolutePath(
-            $relativePath,
-        );
 
         return $this->file(
             $absolutePath,
