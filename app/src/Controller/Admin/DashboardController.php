@@ -63,6 +63,12 @@ class DashboardController extends AbstractDashboardController
             'fa-solid fa-chart-pie',
         );
 
+        yield MenuItem::linkTo(
+            AnalysisDimensionAssignmentCrudController::class,
+            'Analysis Assignments',
+            'fa-solid fa-diagram-project',
+        );
+
         yield MenuItem::section('Reference Data');
 
         yield MenuItem::linkTo(
