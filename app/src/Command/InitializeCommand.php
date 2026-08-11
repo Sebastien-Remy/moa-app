@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Initialization\CurrencyInitializer;
 use App\Initialization\DocumentTypeInitializer;
 use App\Initialization\FolderInitializer;
 use App\Initialization\StatusInitializer;
@@ -18,6 +19,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class InitializeCommand extends Command
 {
     public function __construct(
+        private readonly CurrencyInitializer $currencyInitializer,
         private readonly FolderInitializer $folderInitializer,
         private readonly DocumentTypeInitializer $documentTypeInitializer,
         private readonly StatusInitializer $statusInitializer,
@@ -31,15 +33,19 @@ final class InitializeCommand extends Command
     ): int {
         $io = new SymfonyStyle($input, $output);
 
+        $currencyCount = $this->currencyInitializer->initialize();
         $folderCount = $this->folderInitializer->initialize();
         $documentTypeCount = $this->documentTypeInitializer->initialize();
         $statusCount = $this->statusInitializer->initialize();
 
-        $io->success([
-            sprintf('%d folder(s) created.', $folderCount),
-            sprintf('%d document type(s) created.', $documentTypeCount),
-            sprintf('%d status(es) created.', $statusCount),
-        ]);
+        $io->success('Initialization completed.');
+
+        $io->definitionList(
+            ['Currencies' => sprintf('%d created', $currencyCount)],
+            ['Folders' => sprintf('%d created', $folderCount)],
+            ['Document types' => sprintf('%d created', $documentTypeCount)],
+            ['Statuses' => sprintf('%d created', $statusCount)],
+        );
 
         return Command::SUCCESS;
     }
