@@ -57,6 +57,12 @@ class DashboardController extends AbstractDashboardController
             'fa-solid fa-link',
         );
 
+        yield MenuItem::linkTo(
+            AnalysisCrudController::class,
+            'Analyses',
+            'fa-solid fa-chart-pie',
+        );
+
         yield MenuItem::section('Reference Data');
 
         yield MenuItem::linkTo(
