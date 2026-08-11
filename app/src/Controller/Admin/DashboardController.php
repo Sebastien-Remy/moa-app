@@ -40,6 +40,12 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Reference Data');
 
         yield MenuItem::linkTo(
+            CurrencyCrudController::class,
+            'Currencies',
+            'fa-solid fa-coins',
+        );
+
+        yield MenuItem::linkTo(
             FolderCrudController::class,
             'Folders',
             'fa-solid fa-folder',

@@ -47,6 +47,10 @@ class Document
     #[Assert\PositiveOrZero]
     private ?int $totalAmount = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
+    private ?Currency $currency = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
@@ -183,6 +187,18 @@ class Document
         return $this;
     }
 
+    public function getCurrency(): ?Currency
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(?Currency $currency): static
+    {
+        $this->currency = $currency;
+
+        return $this;
+    }
+
     public function getNotes(): ?string
     {
         return $this->notes;
@@ -284,6 +300,32 @@ class Document
                 ->atPath('validUntil')
                 ->addViolation();
         }
+    }
+
+    #[Assert\Callback]
+    public function validateAmountAndCurrency(
+        ExecutionContextInterface $context,
+    ): void {
+        $hasAmount = $this->totalAmount !== null;
+        $hasCurrency = $this->currency !== null;
+
+        if ($hasAmount === $hasCurrency) {
+            return;
+        }
+
+        if (!$hasAmount) {
+            $context
+                ->buildViolation('An amount is required when a currency is set.')
+                ->atPath('totalAmount')
+                ->addViolation();
+
+            return;
+        }
+
+        $context
+            ->buildViolation('A currency is required when an amount is set.')
+            ->atPath('currency')
+            ->addViolation();
     }
 
     /**

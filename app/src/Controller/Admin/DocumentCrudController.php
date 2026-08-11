@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Document;
 use App\Entity\Tag;
 use App\Enum\DocumentDirection;
+use App\Service\CurrencyService;
 use App\Service\DocumentStorageService;
 use App\Service\StorageService;
 use App\Service\StoredFileService;
@@ -33,6 +34,7 @@ final class DocumentCrudController extends AbstractCrudController
         private readonly DocumentStorageService $documentStorageService,
         private readonly StoredFileService $storedFileService,
         private readonly StorageService $storageService,
+        private readonly CurrencyService $currencyService,
     ) {
     }
 
@@ -109,7 +111,7 @@ final class DocumentCrudController extends AbstractCrudController
             ->onlyOnIndex();
 
         yield MoneyField::new('totalAmount', 'Amount')
-            ->setCurrency('EUR')
+            ->setCurrencyPropertyPath('currency.code')
             ->setStoredAsCents()
             ->onlyOnIndex();
 
@@ -170,8 +172,11 @@ final class DocumentCrudController extends AbstractCrudController
             ->onlyOnForms();
 
         yield MoneyField::new('totalAmount', 'Amount')
-            ->setCurrency('EUR')
+            ->setCurrencyPropertyPath('currency.code')
             ->setStoredAsCents()
+            ->onlyOnForms();
+
+        yield AssociationField::new('currency', 'Currency')
             ->onlyOnForms();
 
         yield AssociationField::new('tags', 'Tags')
@@ -223,6 +228,9 @@ final class DocumentCrudController extends AbstractCrudController
         yield MoneyField::new('totalAmount', 'Amount')
             ->setCurrency('EUR')
             ->setStoredAsCents()
+            ->onlyOnDetail();
+
+        yield AssociationField::new('currency', 'Currency')
             ->onlyOnDetail();
 
         yield AssociationField::new('tags', 'Tags')
@@ -349,5 +357,16 @@ final class DocumentCrudController extends AbstractCrudController
         }
 
         return $uploadedFile;
+    }
+
+    public function createEntity(string $entityFqcn): Document
+    {
+        $document = new Document();
+
+        $document->setCurrency(
+            $this->currencyService->getDefault()
+        );
+
+        return $document;
     }
 }
