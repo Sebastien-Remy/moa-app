@@ -72,6 +72,18 @@ class DashboardController extends AbstractDashboardController
         );
 
         yield MenuItem::linkTo(
+            AnalysisDimensionCrudController::class,
+            'Analysis Dimensions',
+            'fa-solid fa-table-columns',
+        );
+
+        yield MenuItem::linkTo(
+            AnalysisDimensionValueCrudController::class,
+            'Analysis Dimension Values',
+            'fa-solid fa-sitemap',
+        );
+
+        yield MenuItem::linkTo(
             CurrencyCrudController::class,
             'Currencies',
             'fa-solid fa-coins',
