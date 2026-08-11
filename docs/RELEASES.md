@@ -1,4 +1,45 @@
 # Releases
+## v0.5.1
+
+### Name
+
+Reverse Proxy Support
+
+### Status
+
+Released
+
+### Highlights
+
+- Proper reverse proxy support for Docker deployments
+- Trusted proxy configuration
+- Correct HTTPS URL generation behind Nginx
+- Fixed mixed HTTP/HTTPS links in EasyAdmin
+- Fixed secure document deletion in Safari
+
+---
+
+## v0.5.0
+
+### Name
+
+Complete Document Management
+
+### Status
+
+Released
+
+### Highlights
+
+- Complete EasyAdmin document management
+- Integrated document creation
+- Document detail page
+- Technical CRUDs for DocumentFile and StoredFile
+- Secure document preview
+- Open original file action
+- Document storage refactoring
+- Recorded timestamps with time support
+- Production-ready document management workflow
 
 ## v0.4.0
 
