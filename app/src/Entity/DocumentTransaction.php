@@ -76,4 +76,13 @@ class DocumentTransaction
 
         return $this;
     }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            '%s ↔ %s',
+            $this->document,
+            $this->bankTransaction,
+        );
+    }
 }

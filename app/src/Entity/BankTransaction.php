@@ -165,4 +165,32 @@ class BankTransaction
 
         return $this;
     }
+
+    public function getDisplayName(): string
+    {
+        $parts = [];
+
+        if ($this->date !== null) {
+            $parts[] = $this->date->format('Y-m-d');
+        }
+
+        if ($this->thirdParty !== null) {
+            $parts[] = $this->thirdParty->getName();
+        }
+
+        if ($this->bankLabel !== null && $this->bankLabel !== '') {
+            $parts[] = $this->bankLabel;
+        }
+
+        if ($parts === []) {
+            return 'New bank transaction';
+        }
+
+        return implode(' | ', $parts);
+    }
+
+    public function __toString(): string
+    {
+        return $this->getDisplayName();
+    }
 }

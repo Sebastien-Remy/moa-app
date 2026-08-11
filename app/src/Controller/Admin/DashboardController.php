@@ -37,6 +37,26 @@ class DashboardController extends AbstractDashboardController
             'fa-solid fa-file-lines',
         );
 
+        yield MenuItem::section('Financial');
+
+        yield MenuItem::linkTo(
+            BankAccountCrudController::class,
+            'Bank Accounts',
+            'fa-solid fa-building-columns',
+        );
+
+        yield MenuItem::linkTo(
+            BankTransactionCrudController::class,
+            'Bank Transactions',
+            'fa-solid fa-money-check-dollar',
+        );
+
+        yield MenuItem::linkTo(
+            DocumentTransactionCrudController::class,
+            'Reconciliations',
+            'fa-solid fa-link',
+        );
+
         yield MenuItem::section('Reference Data');
 
         yield MenuItem::linkTo(

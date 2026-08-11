@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\BankAccount;
 use App\Entity\BankTransaction;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -16,28 +17,14 @@ class BankTransactionRepository extends ServiceEntityRepository
         parent::__construct($registry, BankTransaction::class);
     }
 
-    //    /**
-    //     * @return BankTransaction[] Returns an array of BankTransaction objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('b.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?BankTransaction
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function existsForBankAccount(BankAccount $bankAccount): bool
+    {
+        return (bool) $this->createQueryBuilder('bankTransaction')
+            ->select('1')
+            ->andWhere('bankTransaction.bankAccount = :bankAccount')
+            ->setParameter('bankAccount', $bankAccount)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

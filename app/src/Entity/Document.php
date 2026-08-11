@@ -351,4 +351,32 @@ class Document
 
         return $this;
     }
+
+    public function getDisplayName(): string
+    {
+        $parts = [];
+
+        if ($this->issuedAt !== null) {
+            $parts[] = $this->issuedAt->format('Y-m-d');
+        }
+
+        if ($this->thirdParty !== null) {
+            $parts[] = $this->thirdParty->getName();
+        }
+
+        if ($this->reference !== null && $this->reference !== '') {
+            $parts[] = $this->reference;
+        }
+
+        if ($parts === []) {
+            return 'New document';
+        }
+
+        return implode(' | ', $parts);
+    }
+
+    public function __toString(): string
+    {
+        return $this->getDisplayName();
+    }
 }

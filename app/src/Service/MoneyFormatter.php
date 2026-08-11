@@ -6,10 +6,13 @@ use App\Entity\Currency;
 
 final readonly class MoneyFormatter
 {
-    public function format(int $amount, Currency $currency): string
-    {
+    public function format(
+        int $amount,
+        Currency $currency,
+        string $locale = 'en',
+    ): string {
         $formatter = new \NumberFormatter(
-            'en',
+            $locale,
             \NumberFormatter::CURRENCY,
         );
 
@@ -18,9 +21,17 @@ final readonly class MoneyFormatter
             $currency->getDecimalPlaces(),
         );
 
-        return $formatter->formatCurrency(
+        $formatted = $formatter->formatCurrency(
             $amount / (10 ** $currency->getDecimalPlaces()),
             $currency->getCode(),
         );
+
+        if ($formatted === false) {
+            throw new \RuntimeException(
+                'Unable to format monetary amount.',
+            );
+        }
+
+        return $formatted;
     }
 }

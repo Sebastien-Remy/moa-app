@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Currency;
+use App\Exception\BusinessRuleException;
 use App\Repository\CurrencyRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -35,7 +36,7 @@ final readonly class CurrencyService
             !$currency->isActive() &&
             $currency->isDefault()
         ) {
-            throw new \LogicException(
+            throw new BusinessRuleException(
                 'The default currency must remain active.'
             );
         }
