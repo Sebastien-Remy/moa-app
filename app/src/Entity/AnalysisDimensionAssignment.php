@@ -9,6 +9,10 @@ use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AnalysisDimensionAssignmentRepository::class)]
+#[ORM\UniqueConstraint(
+    name: 'uniq_analysis_dimension_assignment',
+    columns: ['analysis_id', 'analysis_dimension_value_id'],
+)]
 class AnalysisDimensionAssignment
 {
     #[ORM\Id]

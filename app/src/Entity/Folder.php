@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\FolderRepository;
+use App\Validator\NormalizedUnique;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -10,7 +11,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Validator\NormalizedUnique;
 
 #[ORM\Entity(repositoryClass: FolderRepository::class)]
 #[NormalizedUnique(
@@ -70,7 +70,7 @@ class Folder
 
     public function setName(string $name): static
     {
-        $this->name = ($name);
+        $this->name = trim($name);
 
         return $this;
     }
@@ -153,8 +153,15 @@ class Folder
         return $this->documents->count();
     }
 
+    public function getDisplayName(): string
+    {
+        return $this->name !== ''
+            ? $this->name
+            : 'New folder';
+    }
+
     public function __toString(): string
     {
-        return $this->name;
+        return $this->getDisplayName();
     }
 }

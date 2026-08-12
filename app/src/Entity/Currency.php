@@ -12,6 +12,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 
 #[ORM\Entity(repositoryClass: CurrencyRepository::class)]
+#[ORM\Index(
+    name: 'idx_currency_active',
+    columns: ['active'],
+)]
+#[ORM\Index(
+    name: 'idx_currency_is_default',
+    columns: ['is_default'],
+)]
 #[UniqueEntity(fields: ['code'])]
 class Currency
 {
@@ -24,6 +32,10 @@ class Currency
     #[ORM\Column(length: 3, unique: true)]
     #[Assert\NotBlank]
     #[Assert\Length(min: 3, max: 3)]
+    #[Assert\Regex(
+        pattern: '/^[A-Za-z]{3}$/',
+        message: 'The currency code must contain exactly three letters.',
+    )]
     private ?string $code = null;
 
     #[ORM\Column(length: 100)]
@@ -56,7 +68,7 @@ class Currency
 
     public function setCode(string $code): static
     {
-        $this->code = $code;
+        $this->code = trim($code);
 
         return $this;
     }
@@ -68,7 +80,7 @@ class Currency
 
     public function setName(string $name): static
     {
-        $this->name = $name;
+        $this->name = trim($name);
 
         return $this;
     }
@@ -80,7 +92,8 @@ class Currency
 
     public function setSymbol(?string $symbol): static
     {
-        $this->symbol = $symbol;
+        $symbol = $symbol !== null ? trim($symbol) : null;
+        $this->symbol = $symbol !== '' ? $symbol : null;
 
         return $this;
     }
@@ -121,8 +134,21 @@ class Currency
         return $this;
     }
 
+    public function getDisplayName(): string
+    {
+        if ($this->code === null) {
+            return $this->name ?? 'New currency';
+        }
+
+        if ($this->name === null) {
+            return $this->code;
+        }
+
+        return sprintf('%s - %s', $this->code, $this->name);
+    }
+
     public function __toString(): string
     {
-        return trim(sprintf('%s - %s', $this->code ?? '', $this->name ?? ''));
+        return $this->getDisplayName();
     }
 }

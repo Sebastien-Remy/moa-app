@@ -132,8 +132,15 @@ class ThirdParty
         return $this->documents->count();
     }
 
+    public function getDisplayName(): string
+    {
+        return $this->name !== ''
+            ? $this->name
+            : 'New third party';
+    }
+
     public function __toString(): string
     {
-        return $this->name;
+        return $this->getDisplayName();
     }
 }

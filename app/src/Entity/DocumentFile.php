@@ -70,4 +70,14 @@ class DocumentFile
     {
         return $this->storedFile;
     }
+
+    public function getDisplayName(): string
+    {
+        return $this->originalName;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getDisplayName();
+    }
 }

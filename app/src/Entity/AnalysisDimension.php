@@ -11,6 +11,14 @@ use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AnalysisDimensionRepository::class)]
+#[ORM\Index(
+    name: 'idx_analysis_dimension_position',
+    columns: ['position'],
+)]
+#[ORM\Index(
+    name: 'idx_analysis_dimension_active',
+    columns: ['active'],
+)]
 class AnalysisDimension
 {
     #[ORM\Id]
@@ -58,7 +66,7 @@ class AnalysisDimension
 
     public function setName(string $name): static
     {
-        $this->name = $name;
+        $this->name = trim($name);
 
         return $this;
     }
@@ -70,7 +78,8 @@ class AnalysisDimension
 
     public function setCode(?string $code): static
     {
-        $this->code = $code;
+        $code = $code !== null ? trim($code) : null;
+        $this->code = $code !== '' ? $code : null;
 
         return $this;
     }

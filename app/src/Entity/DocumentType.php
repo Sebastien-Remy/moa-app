@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\DocumentTypeRepository;
+use App\Validator\NormalizedUnique;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -10,7 +11,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Validator\NormalizedUnique;
 
 #[ORM\Entity(repositoryClass: DocumentTypeRepository::class)]
 #[NormalizedUnique(
@@ -134,8 +134,15 @@ class DocumentType
         return $this->documents->count();
     }
 
+    public function getDisplayName(): string
+    {
+        return $this->name !== ''
+            ? $this->name
+            : 'New document type';
+    }
+
     public function __toString(): string
     {
-        return $this->name;
+        return $this->getDisplayName();
     }
 }

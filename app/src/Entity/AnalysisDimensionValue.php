@@ -11,6 +11,14 @@ use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AnalysisDimensionValueRepository::class)]
+#[ORM\Index(
+    name: 'idx_analysis_dimension_value_position',
+    columns: ['position'],
+)]
+#[ORM\Index(
+    name: 'idx_analysis_dimension_value_active',
+    columns: ['active'],
+)]
 class AnalysisDimensionValue
 {
     #[ORM\Id]
@@ -46,9 +54,19 @@ class AnalysisDimensionValue
     #[ORM\Column]
     private bool $active = true;
 
+    /**
+     * @var Collection<int, AnalysisDimensionAssignment>
+     */
+    #[ORM\OneToMany(
+        targetEntity: AnalysisDimensionAssignment::class,
+        mappedBy: 'analysisDimensionValue',
+    )]
+    private Collection $analysisDimensionAssignments;
+
     public function __construct()
     {
         $this->children = new ArrayCollection();
+        $this->analysisDimensionAssignments = new ArrayCollection();
     }
 
     public function getId(): ?Ulid
@@ -75,7 +93,7 @@ class AnalysisDimensionValue
 
     public function setName(string $name): static
     {
-        $this->name = $name;
+        $this->name = trim($name);
 
         return $this;
     }
@@ -141,6 +159,33 @@ class AnalysisDimensionValue
     public function setActive(bool $active): static
     {
         $this->active = $active;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AnalysisDimensionAssignment>
+     */
+    public function getAnalysisDimensionAssignments(): Collection
+    {
+        return $this->analysisDimensionAssignments;
+    }
+
+    public function addAnalysisDimensionAssignment(
+        AnalysisDimensionAssignment $assignment,
+    ): static {
+        if (!$this->analysisDimensionAssignments->contains($assignment)) {
+            $this->analysisDimensionAssignments->add($assignment);
+            $assignment->setAnalysisDimensionValue($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAnalysisDimensionAssignment(
+        AnalysisDimensionAssignment $assignment,
+    ): static {
+        $this->analysisDimensionAssignments->removeElement($assignment);
 
         return $this;
     }

@@ -149,4 +149,25 @@ class StoredFile
         return $this;
     }
 
+    public function removeDocumentFile(DocumentFile $documentFile): static
+    {
+        $this->documentFiles->removeElement($documentFile);
+
+        return $this;
+    }
+
+    public function getDisplayName(): string
+    {
+        return sprintf(
+            '%s | %s bytes | %s',
+            $this->mimeType,
+            $this->size,
+            substr($this->checksum, 0, 12),
+        );
+    }
+
+    public function __toString(): string
+    {
+        return $this->getDisplayName();
+    }
 }

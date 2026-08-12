@@ -110,6 +110,7 @@ class Document
     {
         return $this->direction;
     }
+
     public function getDirectionDisplay(): string
     {
         return sprintf(
@@ -360,7 +361,7 @@ class Document
             $parts[] = $this->issuedAt->format('Y-m-d');
         }
 
-        if ($this->thirdParty !== null) {
+        if ($this->thirdParty !== null && $this->thirdParty->getName() !== null) {
             $parts[] = $this->thirdParty->getName();
         }
 

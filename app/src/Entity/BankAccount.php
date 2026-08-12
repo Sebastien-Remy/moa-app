@@ -9,6 +9,10 @@ use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BankAccountRepository::class)]
+#[ORM\Index(
+    name: 'idx_bank_account_active',
+    columns: ['active'],
+)]
 class BankAccount
 {
     #[ORM\Id]
@@ -51,7 +55,7 @@ class BankAccount
 
     public function setName(string $name): static
     {
-        $this->name = $name;
+        $this->name = trim($name);
 
         return $this;
     }
@@ -63,7 +67,7 @@ class BankAccount
 
     public function setBankName(string $bankName): static
     {
-        $this->bankName = $bankName;
+        $this->bankName = trim($bankName);
 
         return $this;
     }
@@ -104,8 +108,13 @@ class BankAccount
         return $this;
     }
 
+    public function getDisplayName(): string
+    {
+        return $this->name ?? 'New bank account';
+    }
+
     public function __toString(): string
     {
-        return $this->name ?? '';
+        return $this->getDisplayName();
     }
 }

@@ -10,6 +10,22 @@ use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BankTransactionRepository::class)]
+#[ORM\Index(
+    name: 'idx_bank_transaction_date',
+    columns: ['date'],
+)]
+#[ORM\Index(
+    name: 'idx_bank_transaction_value_date',
+    columns: ['value_date'],
+)]
+#[ORM\Index(
+    name: 'idx_bank_transaction_reference',
+    columns: ['reference'],
+)]
+#[ORM\Index(
+    name: 'idx_bank_transaction_import_reference',
+    columns: ['import_reference'],
+)]
 class BankTransaction
 {
     #[ORM\Id]
@@ -48,9 +64,11 @@ class BankTransaction
     private ?ThirdParty $thirdParty = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $reference = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $importReference = null;
 
     public function getId(): ?Ulid
@@ -101,7 +119,7 @@ class BankTransaction
 
     public function setBankLabel(string $bankLabel): static
     {
-        $this->bankLabel = $bankLabel;
+        $this->bankLabel = trim($bankLabel);
 
         return $this;
     }
@@ -113,7 +131,8 @@ class BankTransaction
 
     public function setNotes(?string $notes): static
     {
-        $this->notes = $notes;
+        $notes = $notes !== null ? trim($notes) : null;
+        $this->notes = $notes !== '' ? $notes : null;
 
         return $this;
     }
@@ -149,7 +168,8 @@ class BankTransaction
 
     public function setReference(?string $reference): static
     {
-        $this->reference = $reference;
+        $reference = $reference !== null ? trim($reference) : null;
+        $this->reference = $reference !== '' ? $reference : null;
 
         return $this;
     }
@@ -161,7 +181,13 @@ class BankTransaction
 
     public function setImportReference(?string $importReference): static
     {
-        $this->importReference = $importReference;
+        $importReference = $importReference !== null
+            ? trim($importReference)
+            : null;
+
+        $this->importReference = $importReference !== ''
+            ? $importReference
+            : null;
 
         return $this;
     }

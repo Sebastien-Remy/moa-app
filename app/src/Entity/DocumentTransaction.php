@@ -33,6 +33,7 @@ class DocumentTransaction
     private ?BankTransaction $bankTransaction = null;
 
     #[ORM\Column(type: Types::BIGINT)]
+    #[Assert\NotNull]
     #[Assert\Positive]
     private ?int $amount = null;
 
@@ -77,12 +78,20 @@ class DocumentTransaction
         return $this;
     }
 
-    public function __toString(): string
+    public function getDisplayName(): string
     {
+        $document = $this->document?->getDisplayName() ?? 'New document';
+        $bankTransaction = $this->bankTransaction?->getDisplayName() ?? 'New bank transaction';
+
         return sprintf(
             '%s ↔ %s',
-            $this->document,
-            $this->bankTransaction,
+            $document,
+            $bankTransaction,
         );
+    }
+
+    public function __toString(): string
+    {
+        return $this->getDisplayName();
     }
 }

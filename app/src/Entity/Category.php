@@ -11,6 +11,14 @@ use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
+#[ORM\Index(
+    name: 'idx_category_position',
+    columns: ['position'],
+)]
+#[ORM\Index(
+    name: 'idx_category_active',
+    columns: ['active'],
+)]
 class Category
 {
     #[ORM\Id]
@@ -61,7 +69,7 @@ class Category
 
     public function setName(string $name): static
     {
-        $this->name = $name;
+        $this->name = trim($name);
 
         return $this;
     }
