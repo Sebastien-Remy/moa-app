@@ -36,7 +36,13 @@ final class BankAccountCrudController extends BaseCrudController
     {
         return $crud
             ->setEntityLabelInSingular('Bank Account')
-            ->setEntityLabelInPlural('Bank Accounts');
+            ->setEntityLabelInPlural('Bank Accounts')
+            ->setSearchFields([
+                'name',
+                'bankName',
+                'iban',
+                'currency.code',
+            ]);
     }
 
     public function configureActions(Actions $actions): Actions
@@ -64,13 +70,7 @@ final class BankAccountCrudController extends BaseCrudController
             ->onlyWhenCreating();
 
         yield AssociationField::new('currency', 'Currency')
-            ->onlyWhenUpdating();
-
-        yield AssociationField::new('currency', 'Currency')
-            ->onlyOnIndex();
-
-        yield AssociationField::new('currency', 'Currency')
-            ->onlyOnDetail();
+            ->hideWhenCreating();
 
         yield BooleanField::new('active', 'Active')
             ->renderAsSwitch(false);
@@ -95,6 +95,17 @@ final class BankAccountCrudController extends BaseCrudController
 
         $this->executeBusinessAction(
             fn () => $this->bankAccountService->save($entityInstance),
+        );
+    }
+
+    public function deleteEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof BankAccount);
+
+        $this->executeBusinessAction(
+            fn () => $this->bankAccountService->delete($entityInstance),
         );
     }
 

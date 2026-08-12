@@ -100,4 +100,21 @@ class AnalysisDimensionAssignmentRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getOneOrNullResult() !== null;
     }
+
+    public function existsForAnalysis(Analysis $analysis): bool
+    {
+        return $this->createQueryBuilder('assignment')
+            ->select('1')
+            ->andWhere(
+                'IDENTITY(assignment.analysis) = :analysisId'
+            )
+            ->setParameter(
+                'analysisId',
+                $analysis->getId(),
+                UlidType::NAME,
+            )
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult() !== null;
+    }
 }

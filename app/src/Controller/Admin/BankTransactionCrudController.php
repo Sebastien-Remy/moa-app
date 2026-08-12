@@ -53,8 +53,6 @@ final class BankTransactionCrudController extends BaseCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        // Index
-
         yield DateField::new('date', 'Date')
             ->setFormat('dd/MM/yyyy')
             ->onlyOnIndex();
@@ -75,8 +73,6 @@ final class BankTransactionCrudController extends BaseCrudController
 
         yield TextField::new('reference', 'Reference')
             ->onlyOnIndex();
-
-        // Forms
 
         yield AssociationField::new('bankAccount', 'Bank Account')
             ->onlyOnForms();
@@ -108,8 +104,6 @@ final class BankTransactionCrudController extends BaseCrudController
 
         yield TextareaField::new('notes', 'Notes')
             ->onlyOnForms();
-
-        // Detail
 
         yield IdField::new('id')
             ->onlyOnDetail();
@@ -165,6 +159,17 @@ final class BankTransactionCrudController extends BaseCrudController
 
         $this->executeBusinessAction(
             fn () => $this->bankTransactionService->save($entityInstance),
+        );
+    }
+
+    public function deleteEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof BankTransaction);
+
+        $this->executeBusinessAction(
+            fn () => $this->bankTransactionService->delete($entityInstance),
         );
     }
 }

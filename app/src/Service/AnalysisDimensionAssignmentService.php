@@ -71,4 +71,11 @@ final readonly class AnalysisDimensionAssignmentService
             );
         }
     }
+
+    public function delete(
+        AnalysisDimensionAssignment $assignment,
+    ): void {
+        $this->entityManager->remove($assignment);
+        $this->entityManager->flush();
+    }
 }

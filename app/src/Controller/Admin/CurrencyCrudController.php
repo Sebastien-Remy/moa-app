@@ -11,7 +11,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
@@ -35,7 +34,12 @@ class CurrencyCrudController extends BaseCrudController
     {
         return $crud
             ->setEntityLabelInSingular('Currency')
-            ->setEntityLabelInPlural('Currencies');
+            ->setEntityLabelInPlural('Currencies')
+            ->setSearchFields([
+                'code',
+                'name',
+                'symbol',
+            ]);
     }
 
     public function configureActions(Actions $actions): Actions
@@ -83,6 +87,17 @@ class CurrencyCrudController extends BaseCrudController
 
         $this->executeBusinessAction(
             fn () => $this->currencyService->save($entityInstance),
+        );
+    }
+
+    public function deleteEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof Currency);
+
+        $this->executeBusinessAction(
+            fn () => $this->currencyService->delete($entityInstance),
         );
     }
 

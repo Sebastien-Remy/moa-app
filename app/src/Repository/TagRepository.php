@@ -22,13 +22,13 @@ class TagRepository extends ServiceEntityRepository
     public function existsByEquivalentName(string $name): bool
     {
         return $this->createQueryBuilder('tag')
-                ->select('1')
-                ->andWhere(
-                    'LOWER(TRIM(tag.name)) = LOWER(TRIM(:name))'
-                )
-                ->setParameter('name', $name)
-                ->setMaxResults(1)
-                ->getQuery()
-                ->getOneOrNullResult() !== null;
+            ->select('1')
+            ->andWhere(
+                'LOWER(TRIM(tag.name)) = LOWER(TRIM(:name))'
+            )
+            ->setParameter('name', $name)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult() !== null;
     }
 }

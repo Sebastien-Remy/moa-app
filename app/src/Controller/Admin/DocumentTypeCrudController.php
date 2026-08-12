@@ -3,17 +3,23 @@
 namespace App\Controller\Admin;
 
 use App\Entity\DocumentType;
+use App\Service\DocumentTypeService;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ColorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
-class DocumentTypeCrudController extends AbstractCrudController
+final class DocumentTypeCrudController extends BaseCrudController
 {
+    public function __construct(
+        private readonly DocumentTypeService $documentTypeService,
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return DocumentType::class;
@@ -143,5 +149,38 @@ class DocumentTypeCrudController extends AbstractCrudController
 
         yield IntegerField::new('documentCount', 'Documents')
             ->onlyOnDetail();
+    }
+
+    public function persistEntity(
+        EntityManagerInterface $_entityManager,
+        $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof DocumentType);
+
+        $this->executeBusinessAction(
+            fn () => $this->documentTypeService->save($entityInstance),
+        );
+    }
+
+    public function updateEntity(
+        EntityManagerInterface $_entityManager,
+        $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof DocumentType);
+
+        $this->executeBusinessAction(
+            fn () => $this->documentTypeService->save($entityInstance),
+        );
+    }
+
+    public function deleteEntity(
+        EntityManagerInterface $_entityManager,
+        $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof DocumentType);
+
+        $this->executeBusinessAction(
+            fn () => $this->documentTypeService->delete($entityInstance),
+        );
     }
 }

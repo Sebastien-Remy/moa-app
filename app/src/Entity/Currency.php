@@ -68,7 +68,7 @@ class Currency
 
     public function setCode(string $code): static
     {
-        $this->code = trim($code);
+        $this->code = strtoupper(trim($code));
 
         return $this;
     }

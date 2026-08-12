@@ -40,17 +40,18 @@ final readonly class CategoryService
         while ($parent !== null) {
             if ($parent === $category) {
                 throw new BusinessRuleException(
-                    'A category hierarchy cannot contain cycles.',
+                    'A category hierarchy cannot contain cycles.'
                 );
             }
 
             if (
                 $category->getId() !== null
                 && $parent->getId() !== null
-                && (string) $category->getId() === (string) $parent->getId()
+                && (string) $category->getId()
+                === (string) $parent->getId()
             ) {
                 throw new BusinessRuleException(
-                    'A category hierarchy cannot contain cycles.',
+                    'A category hierarchy cannot contain cycles.'
                 );
             }
 

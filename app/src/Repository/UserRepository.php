@@ -29,9 +29,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         return null;
     }
+
     public function hasOwner(): bool
     {
-        return null !== $this->findOwner();
+        return $this->findOwner() !== null;
     }
 
     /**

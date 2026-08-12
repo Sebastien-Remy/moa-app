@@ -64,7 +64,7 @@ final class CategoryCrudController extends BaseCrudController
 
     public function persistEntity(
         EntityManagerInterface $_entityManager,
-                               $entityInstance,
+        $entityInstance,
     ): void {
         \assert($entityInstance instanceof Category);
 
@@ -75,7 +75,7 @@ final class CategoryCrudController extends BaseCrudController
 
     public function updateEntity(
         EntityManagerInterface $_entityManager,
-                               $entityInstance,
+        $entityInstance,
     ): void {
         \assert($entityInstance instanceof Category);
 
@@ -86,7 +86,7 @@ final class CategoryCrudController extends BaseCrudController
 
     public function deleteEntity(
         EntityManagerInterface $_entityManager,
-                               $entityInstance,
+        $entityInstance,
     ): void {
         \assert($entityInstance instanceof Category);
 

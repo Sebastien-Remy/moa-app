@@ -13,7 +13,7 @@ class DashboardController extends AbstractDashboardController
 {
     public function index(): Response
     {
-        return $this->redirectToRoute('admin_user_index');
+        return $this->redirectToRoute('admin_document_index');
     }
 
     public function configureDashboard(): Dashboard
@@ -149,7 +149,5 @@ class DashboardController extends AbstractDashboardController
             'Users',
             'fa-solid fa-users',
         );
-
-
     }
 }

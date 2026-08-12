@@ -22,13 +22,13 @@ class DocumentTypeRepository extends ServiceEntityRepository
     public function existsByEquivalentName(string $name): bool
     {
         return $this->createQueryBuilder('documentType')
-                ->select('1')
-                ->andWhere(
-                    'LOWER(TRIM(documentType.name)) = LOWER(TRIM(:name))'
-                )
-                ->setParameter('name', $name)
-                ->setMaxResults(1)
-                ->getQuery()
-                ->getOneOrNullResult() !== null;
+            ->select('1')
+            ->andWhere(
+                'LOWER(TRIM(documentType.name)) = LOWER(TRIM(:name))'
+            )
+            ->setParameter('name', $name)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult() !== null;
     }
 }

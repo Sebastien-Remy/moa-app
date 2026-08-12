@@ -6,12 +6,11 @@ use App\Entity\DocumentFile;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
-class DocumentFileCrudController extends AbstractCrudController
+final class DocumentFileCrudController extends BaseCrudController
 {
     public static function getEntityFqcn(): string
     {
@@ -21,15 +20,26 @@ class DocumentFileCrudController extends AbstractCrudController
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
+            ->setEntityLabelInSingular('Document File')
+            ->setEntityLabelInPlural('Document Files')
             ->setDefaultSort([
                 'id' => 'DESC',
+            ])
+            ->setSearchFields([
+                'originalName',
+                'document.reference',
+                'storedFile.checksum',
             ]);
     }
 
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            ->disable(Action::NEW, Action::EDIT)
+            ->disable(
+                Action::NEW,
+                Action::EDIT,
+                Action::DELETE,
+            )
             ->add(Crud::PAGE_INDEX, Action::DETAIL);
     }
 

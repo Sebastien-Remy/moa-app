@@ -24,6 +24,21 @@ final readonly class BankAccountService
         $this->entityManager->flush();
     }
 
+    public function delete(BankAccount $bankAccount): void
+    {
+        if (
+            $this->bankTransactionRepository
+                ->existsForBankAccount($bankAccount)
+        ) {
+            throw new BusinessRuleException(
+                'A bank account with transactions cannot be deleted.'
+            );
+        }
+
+        $this->entityManager->remove($bankAccount);
+        $this->entityManager->flush();
+    }
+
     private function normalizeIban(BankAccount $bankAccount): void
     {
         $iban = $bankAccount->getIban();
@@ -55,12 +70,16 @@ final readonly class BankAccountService
         }
 
         if (
-            (string) $originalCurrency->getId() === (string) $currentCurrency->getId()
+            (string) $originalCurrency->getId()
+            === (string) $currentCurrency->getId()
         ) {
             return;
         }
 
-        if ($this->bankTransactionRepository->existsForBankAccount($bankAccount)) {
+        if (
+            $this->bankTransactionRepository
+                ->existsForBankAccount($bankAccount)
+        ) {
             throw new BusinessRuleException(
                 'The currency of a bank account cannot be changed once transactions exist.'
             );

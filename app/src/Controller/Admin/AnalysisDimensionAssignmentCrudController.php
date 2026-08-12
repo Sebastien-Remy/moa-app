@@ -27,7 +27,14 @@ final class AnalysisDimensionAssignmentCrudController extends BaseCrudController
     {
         return $crud
             ->setEntityLabelInSingular('Analysis Dimension Assignment')
-            ->setEntityLabelInPlural('Analysis Dimension Assignments');
+            ->setEntityLabelInPlural('Analysis Dimension Assignments')
+            ->setSearchFields([
+                'analysis.document.reference',
+                'analysis.bankTransaction.bankLabel',
+                'analysis.category.name',
+                'analysisDimensionValue.name',
+                'analysisDimensionValue.analysisDimension.name',
+            ]);
     }
 
     public function configureActions(Actions $actions): Actions
@@ -56,7 +63,8 @@ final class AnalysisDimensionAssignmentCrudController extends BaseCrudController
         \assert($entityInstance instanceof AnalysisDimensionAssignment);
 
         $this->executeBusinessAction(
-            fn () => $this->analysisDimensionAssignmentService->save($entityInstance),
+            fn () => $this->analysisDimensionAssignmentService
+                ->save($entityInstance),
         );
     }
 
@@ -67,7 +75,20 @@ final class AnalysisDimensionAssignmentCrudController extends BaseCrudController
         \assert($entityInstance instanceof AnalysisDimensionAssignment);
 
         $this->executeBusinessAction(
-            fn () => $this->analysisDimensionAssignmentService->save($entityInstance),
+            fn () => $this->analysisDimensionAssignmentService
+                ->save($entityInstance),
+        );
+    }
+
+    public function deleteEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof AnalysisDimensionAssignment);
+
+        $this->executeBusinessAction(
+            fn () => $this->analysisDimensionAssignmentService
+                ->delete($entityInstance),
         );
     }
 }

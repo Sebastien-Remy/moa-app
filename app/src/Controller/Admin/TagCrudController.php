@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Tag;
+use App\Service\TagService;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -12,8 +14,13 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
-class TagCrudController extends AbstractCrudController
+final class TagCrudController extends BaseCrudController
 {
+    public function __construct(
+        private readonly TagService $tagService,
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return Tag::class;
@@ -141,5 +148,38 @@ class TagCrudController extends AbstractCrudController
 
         yield IntegerField::new('documentCount', 'Documents')
             ->onlyOnDetail();
+    }
+
+    public function persistEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof Tag);
+
+        $this->executeBusinessAction(
+            fn () => $this->tagService->save($entityInstance),
+        );
+    }
+
+    public function updateEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof Tag);
+
+        $this->executeBusinessAction(
+            fn () => $this->tagService->save($entityInstance),
+        );
+    }
+
+    public function deleteEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof Tag);
+
+        $this->executeBusinessAction(
+            fn () => $this->tagService->delete($entityInstance),
+        );
     }
 }

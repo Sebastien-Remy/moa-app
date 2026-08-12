@@ -3,17 +3,23 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Folder;
+use App\Service\FolderService;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ColorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
-class FolderCrudController extends AbstractCrudController
+final class FolderCrudController extends BaseCrudController
 {
+    public function __construct(
+        private readonly FolderService $folderService,
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return Folder::class;
@@ -30,8 +36,6 @@ class FolderCrudController extends AbstractCrudController
                 'notes',
             ]);
     }
-
-
 
     public function configureActions(Actions $actions): Actions
     {
@@ -145,5 +149,38 @@ class FolderCrudController extends AbstractCrudController
 
         yield IntegerField::new('documentCount', 'Documents')
             ->onlyOnDetail();
+    }
+
+    public function persistEntity(
+        EntityManagerInterface $_entityManager,
+        $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof Folder);
+
+        $this->executeBusinessAction(
+            fn () => $this->folderService->save($entityInstance),
+        );
+    }
+
+    public function updateEntity(
+        EntityManagerInterface $_entityManager,
+        $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof Folder);
+
+        $this->executeBusinessAction(
+            fn () => $this->folderService->save($entityInstance),
+        );
+    }
+
+    public function deleteEntity(
+        EntityManagerInterface $_entityManager,
+        $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof Folder);
+
+        $this->executeBusinessAction(
+            fn () => $this->folderService->delete($entityInstance),
+        );
     }
 }

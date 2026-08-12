@@ -127,4 +127,39 @@ class DocumentTransactionRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getOneOrNullResult() !== null;
     }
+
+    public function existsForBankTransaction(
+        BankTransaction $bankTransaction,
+    ): bool {
+        return $this->createQueryBuilder('documentTransaction')
+                ->select('1')
+                ->andWhere(
+                    'IDENTITY(documentTransaction.bankTransaction) = :bankTransactionId'
+                )
+                ->setParameter(
+                    'bankTransactionId',
+                    $bankTransaction->getId(),
+                    UlidType::NAME,
+                )
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult() !== null;
+    }
+
+    public function existsForDocument(Document $document): bool
+    {
+        return $this->createQueryBuilder('documentTransaction')
+                ->select('1')
+                ->andWhere(
+                    'IDENTITY(documentTransaction.document) = :documentId'
+                )
+                ->setParameter(
+                    'documentId',
+                    $document->getId(),
+                    UlidType::NAME,
+                )
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult() !== null;
+    }
 }

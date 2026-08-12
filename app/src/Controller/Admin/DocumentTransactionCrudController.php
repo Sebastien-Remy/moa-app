@@ -32,7 +32,13 @@ final class DocumentTransactionCrudController extends BaseCrudController
     {
         return $crud
             ->setEntityLabelInSingular('Reconciliation')
-            ->setEntityLabelInPlural('Reconciliations');
+            ->setEntityLabelInPlural('Reconciliations')
+            ->setSearchFields([
+                'document.reference',
+                'document.thirdParty.name',
+                'bankTransaction.bankLabel',
+                'bankTransaction.reference',
+            ]);
     }
 
     public function configureActions(Actions $actions): Actions
@@ -75,10 +81,12 @@ final class DocumentTransactionCrudController extends BaseCrudController
                 'choice_label',
                 function (BankTransaction $bankTransaction): string {
                     $label = $bankTransaction->getDisplayName();
-
                     $bankAccount = $bankTransaction->getBankAccount();
 
-                    if ($bankAccount === null || $bankAccount->getCurrency() === null) {
+                    if (
+                        $bankAccount === null
+                        || $bankAccount->getCurrency() === null
+                    ) {
                         return $label;
                     }
 
@@ -94,7 +102,7 @@ final class DocumentTransactionCrudController extends BaseCrudController
             );
 
         yield MoneyField::new('amount', 'Amount')
-            ->setCurrency('EUR')
+            ->setCurrencyPropertyPath('document.currency.code')
             ->setStoredAsCents();
     }
 
@@ -117,6 +125,17 @@ final class DocumentTransactionCrudController extends BaseCrudController
 
         $this->executeBusinessAction(
             fn () => $this->documentTransactionService->save($entityInstance),
+        );
+    }
+
+    public function deleteEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof DocumentTransaction);
+
+        $this->executeBusinessAction(
+            fn () => $this->documentTransactionService->delete($entityInstance),
         );
     }
 }

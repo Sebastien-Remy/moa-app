@@ -22,13 +22,13 @@ class StatusRepository extends ServiceEntityRepository
     public function existsByEquivalentName(string $name): bool
     {
         return $this->createQueryBuilder('status')
-                ->select('1')
-                ->andWhere(
-                    'LOWER(TRIM(status.name)) = LOWER(TRIM(:name))'
-                )
-                ->setParameter('name', $name)
-                ->setMaxResults(1)
-                ->getQuery()
-                ->getOneOrNullResult() !== null;
+            ->select('1')
+            ->andWhere(
+                'LOWER(TRIM(status.name)) = LOWER(TRIM(:name))'
+            )
+            ->setParameter('name', $name)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult() !== null;
     }
 }

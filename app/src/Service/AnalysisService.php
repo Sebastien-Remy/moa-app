@@ -4,12 +4,14 @@ namespace App\Service;
 
 use App\Entity\Analysis;
 use App\Exception\BusinessRuleException;
+use App\Repository\AnalysisDimensionAssignmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class AnalysisService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private AnalysisDimensionAssignmentRepository $analysisDimensionAssignmentRepository,
     ) {
     }
 
@@ -61,5 +63,20 @@ final readonly class AnalysisService
                 'The selected bank transaction must have a valid bank account currency before it can be analysed.'
             );
         }
+    }
+
+    public function delete(Analysis $analysis): void
+    {
+        if (
+            $this->analysisDimensionAssignmentRepository
+                ->existsForAnalysis($analysis)
+        ) {
+            throw new BusinessRuleException(
+                'An analysis with dimension assignments cannot be deleted.'
+            );
+        }
+
+        $this->entityManager->remove($analysis);
+        $this->entityManager->flush();
     }
 }

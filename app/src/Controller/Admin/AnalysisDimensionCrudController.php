@@ -63,7 +63,7 @@ final class AnalysisDimensionCrudController extends BaseCrudController
 
     public function persistEntity(
         EntityManagerInterface $_entityManager,
-                               $entityInstance,
+        $entityInstance,
     ): void {
         \assert($entityInstance instanceof AnalysisDimension);
 
@@ -74,7 +74,7 @@ final class AnalysisDimensionCrudController extends BaseCrudController
 
     public function updateEntity(
         EntityManagerInterface $_entityManager,
-                               $entityInstance,
+        $entityInstance,
     ): void {
         \assert($entityInstance instanceof AnalysisDimension);
 
@@ -85,7 +85,7 @@ final class AnalysisDimensionCrudController extends BaseCrudController
 
     public function deleteEntity(
         EntityManagerInterface $_entityManager,
-                               $entityInstance,
+        $entityInstance,
     ): void {
         \assert($entityInstance instanceof AnalysisDimension);
 

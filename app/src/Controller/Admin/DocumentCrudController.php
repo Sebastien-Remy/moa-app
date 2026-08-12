@@ -5,16 +5,14 @@ namespace App\Controller\Admin;
 use App\Entity\Document;
 use App\Entity\Tag;
 use App\Enum\DocumentDirection;
-use App\Service\CurrencyService;
+use App\Service\DocumentService;
 use App\Service\DocumentStorageService;
-use App\Service\StorageService;
 use App\Service\StoredFileService;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -28,13 +26,12 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
-final class DocumentCrudController extends AbstractCrudController
+final class DocumentCrudController extends BaseCrudController
 {
     public function __construct(
         private readonly DocumentStorageService $documentStorageService,
         private readonly StoredFileService $storedFileService,
-        private readonly StorageService $storageService,
-        private readonly CurrencyService $currencyService,
+        private readonly DocumentService $documentService,
     ) {
     }
 
@@ -64,10 +61,31 @@ final class DocumentCrudController extends AbstractCrudController
             );
     }
 
+    public function configureActions(Actions $actions): Actions
+    {
+        $openFile = Action::new(
+            'openFile',
+            'Open file…',
+            'fa-solid fa-file-pdf',
+        )
+            ->linkToRoute(
+                'admin_document_open_file',
+                static fn (Document $document): array => [
+                    'id' => (string) $document->getId(),
+                ],
+            )
+            ->setHtmlAttributes([
+                'target' => '_blank',
+                'rel' => 'noopener noreferrer',
+            ]);
+
+        return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_INDEX, $openFile);
+    }
+
     public function configureFields(string $pageName): iterable
     {
-        // Index fields
-
         yield DateTimeField::new('recordedAt', 'Recorded At')
             ->setFormat('dd/MM/yyyy HH:mm')
             ->onlyOnIndex();
@@ -134,15 +152,11 @@ final class DocumentCrudController extends AbstractCrudController
             )
             ->onlyOnIndex();
 
-        // New fields
-
         yield Field::new('uploadedFile', 'File')
             ->setFormType(FileType::class)
             ->setFormTypeOption('mapped', false)
             ->setRequired(true)
             ->onlyWhenCreating();
-
-        // New / Edit fields
 
         yield DateField::new('issuedAt', 'Document Date')
             ->setFormat('dd/MM/yyyy')
@@ -193,8 +207,6 @@ final class DocumentCrudController extends AbstractCrudController
         yield TextareaField::new('notes', 'Notes')
             ->onlyOnForms();
 
-        // Detail fields
-
         yield TextField::new('id', 'UUID')
             ->onlyOnDetail();
 
@@ -226,7 +238,7 @@ final class DocumentCrudController extends AbstractCrudController
             ->onlyOnDetail();
 
         yield MoneyField::new('totalAmount', 'Amount')
-            ->setCurrency('EUR')
+            ->setCurrencyPropertyPath('currency.code')
             ->setStoredAsCents()
             ->onlyOnDetail();
 
@@ -248,36 +260,11 @@ final class DocumentCrudController extends AbstractCrudController
             ->onlyOnDetail();
     }
 
-    public function configureActions(
-        Actions $actions,
-    ): Actions {
-        $openFile = Action::new(
-            'openFile',
-            'Open file…',
-            'fa-solid fa-file-pdf',
-        )
-            ->linkToRoute(
-                'admin_document_open_file',
-                static fn (Document $document): array => [
-                    'id' => (string) $document->getId(),
-                ],
-            )
-            ->setHtmlAttributes([
-                'target' => '_blank',
-                'rel' => 'noopener noreferrer',
-            ]);
-
-        return $actions
-            ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->add(Crud::PAGE_INDEX, $openFile);
-    }
-
     #[AdminRoute(
         path: '/{id}/file',
         name: 'open_file',
     )]
     public function openFile(Document $document): Response
-
     {
         $documentFile = $document->getDocumentFiles()->first();
 
@@ -309,10 +296,13 @@ final class DocumentCrudController extends AbstractCrudController
 
     public function persistEntity(
         EntityManagerInterface $entityManager,
-        $entityInstance,
+                               $entityInstance,
     ): void {
         if (!$entityInstance instanceof Document) {
-            parent::persistEntity($entityManager, $entityInstance);
+            parent::persistEntity(
+                $entityManager,
+                $entityInstance,
+            );
 
             return;
         }
@@ -322,6 +312,28 @@ final class DocumentCrudController extends AbstractCrudController
         $this->documentStorageService->store(
             $entityInstance,
             $uploadedFile,
+        );
+    }
+
+    public function updateEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof Document);
+
+        $this->executeBusinessAction(
+            fn () => $this->documentService->save($entityInstance),
+        );
+    }
+
+    public function deleteEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof Document);
+
+        $this->executeBusinessAction(
+            fn () => $this->documentService->delete($entityInstance),
         );
     }
 
@@ -357,16 +369,5 @@ final class DocumentCrudController extends AbstractCrudController
         }
 
         return $uploadedFile;
-    }
-
-    public function createEntity(string $entityFqcn): Document
-    {
-        $document = new Document();
-
-        $document->setCurrency(
-            $this->currencyService->getDefault()
-        );
-
-        return $document;
     }
 }

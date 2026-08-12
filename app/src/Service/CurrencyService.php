@@ -4,7 +4,9 @@ namespace App\Service;
 
 use App\Entity\Currency;
 use App\Exception\BusinessRuleException;
+use App\Repository\BankAccountRepository;
 use App\Repository\CurrencyRepository;
+use App\Repository\DocumentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class CurrencyService
@@ -12,6 +14,8 @@ final readonly class CurrencyService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private CurrencyRepository $currencyRepository,
+        private DocumentRepository $documentRepository,
+        private BankAccountRepository $bankAccountRepository,
     ) {
     }
 
@@ -30,10 +34,9 @@ final readonly class CurrencyService
 
     public function save(Currency $currency): void
     {
-        $this->normalizeCode($currency);
-
         if (
-            !$currency->isActive() && $currency->isDefault()
+            !$currency->isActive()
+            && $currency->isDefault()
         ) {
             throw new BusinessRuleException(
                 'The default currency must remain active.'
@@ -48,15 +51,28 @@ final readonly class CurrencyService
         $this->entityManager->flush();
     }
 
-    private function normalizeCode(Currency $currency): void
+    public function delete(Currency $currency): void
     {
-        $code = $currency->getCode();
-
-        if ($code === null) {
-            return;
+        if ($currency->isDefault()) {
+            throw new BusinessRuleException(
+                'The default currency cannot be deleted.'
+            );
         }
 
-        $currency->setCode(strtoupper($code));
+        if ($this->documentRepository->existsForCurrency($currency)) {
+            throw new BusinessRuleException(
+                'A currency used by documents cannot be deleted.'
+            );
+        }
+
+        if ($this->bankAccountRepository->existsForCurrency($currency)) {
+            throw new BusinessRuleException(
+                'A currency used by bank accounts cannot be deleted.'
+            );
+        }
+
+        $this->entityManager->remove($currency);
+        $this->entityManager->flush();
     }
 
     private function clearOtherDefaultCurrencies(Currency $currency): void

@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\ThirdParty;
+use App\Service\ThirdPartyService;
+use Doctrine\ORM\EntityManagerInterface;;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -12,8 +14,13 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
-class ThirdPartyCrudController extends AbstractCrudController
+final class ThirdPartyCrudController extends BaseCrudController
 {
+    public function __construct(
+        private readonly ThirdPartyService $thirdPartyService,
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return ThirdParty::class;
@@ -101,8 +108,6 @@ class ThirdPartyCrudController extends AbstractCrudController
         yield IntegerField::new('documentCount', 'Documents')
             ->onlyOnIndex();
 
-        // New / Edit fields
-
         yield TextField::new('name', 'Name')
             ->setRequired(true)
             ->onlyOnForms();
@@ -122,8 +127,6 @@ class ThirdPartyCrudController extends AbstractCrudController
         yield TextareaField::new('notes', 'Notes')
             ->onlyOnForms();
 
-        // Details
-
         yield TextField::new('id', 'UUID')
             ->onlyOnDetail();
 
@@ -141,5 +144,38 @@ class ThirdPartyCrudController extends AbstractCrudController
 
         yield IntegerField::new('documentCount', 'Documents')
             ->onlyOnDetail();
+    }
+
+    public function persistEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof ThirdParty);
+
+        $this->executeBusinessAction(
+            fn () => $this->thirdPartyService->save($entityInstance),
+        );
+    }
+
+    public function updateEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof ThirdParty);
+
+        $this->executeBusinessAction(
+            fn () => $this->thirdPartyService->save($entityInstance),
+        );
+    }
+
+    public function deleteEntity(
+        EntityManagerInterface $_entityManager,
+                               $entityInstance,
+    ): void {
+        \assert($entityInstance instanceof ThirdParty);
+
+        $this->executeBusinessAction(
+            fn () => $this->thirdPartyService->delete($entityInstance),
+        );
     }
 }
