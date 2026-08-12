@@ -19,12 +19,12 @@ class BankTransactionRepository extends ServiceEntityRepository
 
     public function existsForBankAccount(BankAccount $bankAccount): bool
     {
-        return (bool) $this->createQueryBuilder('bankTransaction')
-            ->select('1')
-            ->andWhere('bankTransaction.bankAccount = :bankAccount')
-            ->setParameter('bankAccount', $bankAccount)
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
+        return $this->createQueryBuilder('bankTransaction')
+                ->select('1')
+                ->andWhere('bankTransaction.bankAccount = :bankAccount')
+                ->setParameter('bankAccount', $bankAccount)
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult() !== null;
     }
 }

@@ -13,16 +13,22 @@ class StatusRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Status::class);
+        parent::__construct(
+            $registry,
+            Status::class,
+        );
     }
 
     public function existsByEquivalentName(string $name): bool
     {
-        return (int) $this->createQueryBuilder('e')
-                ->select('COUNT(e.id)')
-                ->where('LOWER(TRIM(e.name)) = LOWER(TRIM(:name))')
+        return $this->createQueryBuilder('status')
+                ->select('1')
+                ->andWhere(
+                    'LOWER(TRIM(status.name)) = LOWER(TRIM(:name))'
+                )
                 ->setParameter('name', $name)
+                ->setMaxResults(1)
                 ->getQuery()
-                ->getSingleScalarResult() > 0;
+                ->getOneOrNullResult() !== null;
     }
 }

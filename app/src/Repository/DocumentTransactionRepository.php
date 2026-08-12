@@ -16,7 +16,10 @@ class DocumentTransactionRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, DocumentTransaction::class);
+        parent::__construct(
+            $registry,
+            DocumentTransaction::class,
+        );
     }
 
     public function getTotalForDocument(
@@ -25,19 +28,23 @@ class DocumentTransactionRepository extends ServiceEntityRepository
     ): int {
         $qb = $this->createQueryBuilder('documentTransaction')
             ->select('COALESCE(SUM(documentTransaction.amount), 0)')
-            ->andWhere('IDENTITY(documentTransaction.document) = :documentId')
+            ->andWhere(
+                'IDENTITY(documentTransaction.document) = :documentId'
+            )
             ->setParameter(
                 'documentId',
                 $document->getId(),
                 UlidType::NAME,
             );
 
-        if ($exclude?->getId() !== null) {
+        $excludeId = $exclude?->getId();
+
+        if ($excludeId !== null) {
             $qb
                 ->andWhere('documentTransaction.id != :excludeId')
                 ->setParameter(
                     'excludeId',
-                    $exclude->getId(),
+                    $excludeId,
                     UlidType::NAME,
                 );
         }
@@ -62,12 +69,14 @@ class DocumentTransactionRepository extends ServiceEntityRepository
                 UlidType::NAME,
             );
 
-        if ($exclude?->getId() !== null) {
+        $excludeId = $exclude?->getId();
+
+        if ($excludeId !== null) {
             $qb
                 ->andWhere('documentTransaction.id != :excludeId')
                 ->setParameter(
                     'excludeId',
-                    $exclude->getId(),
+                    $excludeId,
                     UlidType::NAME,
                 );
         }
@@ -102,12 +111,14 @@ class DocumentTransactionRepository extends ServiceEntityRepository
             )
             ->setMaxResults(1);
 
-        if ($exclude?->getId() !== null) {
+        $excludeId = $exclude?->getId();
+
+        if ($excludeId !== null) {
             $qb
                 ->andWhere('documentTransaction.id != :excludeId')
                 ->setParameter(
                     'excludeId',
-                    $exclude->getId(),
+                    $excludeId,
                     UlidType::NAME,
                 );
         }

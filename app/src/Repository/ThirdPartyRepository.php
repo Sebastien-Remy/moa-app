@@ -13,17 +13,22 @@ class ThirdPartyRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ThirdParty::class);
+        parent::__construct(
+            $registry,
+            ThirdParty::class,
+        );
     }
-
 
     public function existsByEquivalentName(string $name): bool
     {
-        return (int) $this->createQueryBuilder('e')
-                ->select('COUNT(e.id)')
-                ->where('LOWER(TRIM(e.name)) = LOWER(TRIM(:name))')
+        return $this->createQueryBuilder('thirdParty')
+                ->select('1')
+                ->andWhere(
+                    'LOWER(TRIM(thirdParty.name)) = LOWER(TRIM(:name))'
+                )
                 ->setParameter('name', $name)
+                ->setMaxResults(1)
                 ->getQuery()
-                ->getSingleScalarResult() > 0;
+                ->getOneOrNullResult() !== null;
     }
 }

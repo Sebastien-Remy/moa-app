@@ -16,7 +16,10 @@ class AnalysisDimensionAssignmentRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, AnalysisDimensionAssignment::class);
+        parent::__construct(
+            $registry,
+            AnalysisDimensionAssignment::class,
+        );
     }
 
     public function existsForAnalysisAndValue(
@@ -28,14 +31,28 @@ class AnalysisDimensionAssignmentRepository extends ServiceEntityRepository
             ->select('1')
             ->andWhere('IDENTITY(assignment.analysis) = :analysisId')
             ->andWhere('IDENTITY(assignment.analysisDimensionValue) = :valueId')
-            ->setParameter('analysisId', $analysis->getId(), UlidType::NAME)
-            ->setParameter('valueId', $value->getId(), UlidType::NAME)
+            ->setParameter(
+                'analysisId',
+                $analysis->getId(),
+                UlidType::NAME,
+            )
+            ->setParameter(
+                'valueId',
+                $value->getId(),
+                UlidType::NAME,
+            )
             ->setMaxResults(1);
 
-        if ($exclude?->getId() !== null) {
+        $excludeId = $exclude?->getId();
+
+        if ($excludeId !== null) {
             $qb
                 ->andWhere('assignment.id != :excludeId')
-                ->setParameter('excludeId', $exclude->getId(), UlidType::NAME);
+                ->setParameter(
+                    'excludeId',
+                    $excludeId,
+                    UlidType::NAME,
+                );
         }
 
         return $qb->getQuery()->getOneOrNullResult() !== null;
@@ -57,14 +74,28 @@ class AnalysisDimensionAssignmentRepository extends ServiceEntityRepository
             ->join('assignment.analysisDimensionValue', 'value')
             ->andWhere('IDENTITY(assignment.analysis) = :analysisId')
             ->andWhere('IDENTITY(value.analysisDimension) = :dimensionId')
-            ->setParameter('analysisId', $analysis->getId(), UlidType::NAME)
-            ->setParameter('dimensionId', $dimension->getId(), UlidType::NAME)
+            ->setParameter(
+                'analysisId',
+                $analysis->getId(),
+                UlidType::NAME,
+            )
+            ->setParameter(
+                'dimensionId',
+                $dimension->getId(),
+                UlidType::NAME,
+            )
             ->setMaxResults(1);
 
-        if ($exclude?->getId() !== null) {
+        $excludeId = $exclude?->getId();
+
+        if ($excludeId !== null) {
             $qb
                 ->andWhere('assignment.id != :excludeId')
-                ->setParameter('excludeId', $exclude->getId(), UlidType::NAME);
+                ->setParameter(
+                    'excludeId',
+                    $excludeId,
+                    UlidType::NAME,
+                );
         }
 
         return $qb->getQuery()->getOneOrNullResult() !== null;

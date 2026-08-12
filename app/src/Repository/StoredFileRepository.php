@@ -13,14 +13,20 @@ class StoredFileRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, StoredFile::class);
+        parent::__construct(
+            $registry,
+            StoredFile::class,
+        );
     }
 
-    public function findOneByChecksum(string $checksum): ?StoredFile
-
-    {
-        return $this->findOneBy([
-            'checksum' => strtolower(trim($checksum)),
-        ]);
+    public function findOneByChecksum(
+        string $checksum,
+    ): ?StoredFile {
+        return $this->createQueryBuilder('storedFile')
+            ->andWhere('storedFile.checksum = :checksum')
+            ->setParameter('checksum', $checksum)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }
