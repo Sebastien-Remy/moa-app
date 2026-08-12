@@ -42,7 +42,7 @@ Checkout the desired release.
 git checkout <release-tag>
 ```
 
-Replace `<release-tag>` with the version you want to deploy (for example `v0.6.0`).
+Replace `<release-tag>` with the version you want to deploy.
 
 ---
 
@@ -76,32 +76,176 @@ The generated secrets are stored only in the local `.env` file and are never com
 
 ---
 
-## Start the Application
+## Production Docker Compose
 
-Start the Docker services.
+Production must always use both Docker Compose files:
+
+```text
+compose.yaml
+compose.prod.yaml
+```
+
+The production override contains settings that differ from local development, including the published Nginx port used by the host reverse proxy.
+
+Do **not** start the production application with:
 
 ```bash
 docker compose up -d
 ```
 
+This would use only the base Compose configuration and may expose the application on the development port.
+
+Always use:
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+```
+
+---
+
+## Start the Application
+
+Build and start the production Docker services.
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+```
+
+---
+
+## Verify the Containers
+
+Check that the production stack is running.
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml ps
+```
+
+The Nginx container should expose the production port expected by the host reverse proxy.
+
+For the standard MOA deployment:
+
+```text
+127.0.0.1:8100->80/tcp
+```
+
+Verify the internal HTTP endpoint:
+
+```bash
+curl -I http://127.0.0.1:8100
+```
+
+A redirect to `/login` is expected.
+
 ---
 
 ## Run Database Migrations
 
-Initialize the database schema.
+Before upgrading an existing installation, create a database backup.
+
+Then run the migrations:
 
 ```bash
-docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose -f compose.yaml -f compose.prod.yaml exec app \
+    php bin/console doctrine:migrations:migrate --no-interaction
 ```
 
 ---
 
-## Verify the Installation
+## Clear the Production Cache
 
-Check that the containers are running.
+After deploying new code or Doctrine mappings, clear and warm the production cache.
 
 ```bash
-docker compose ps
+docker compose -f compose.yaml -f compose.prod.yaml exec app \
+    php bin/console cache:clear --env=prod
+
+docker compose -f compose.yaml -f compose.prod.yaml exec app \
+    php bin/console cache:warmup --env=prod
 ```
 
-The MOA application should now be available and ready for the initial owner account creation.
+---
+
+## Verify Doctrine
+
+Validate the Doctrine mappings and database schema.
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml exec app \
+    php bin/console doctrine:schema:validate
+```
+
+Expected result:
+
+```text
+Mapping
+[OK]
+
+Database
+[OK]
+```
+
+Verify that no migration remains pending:
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml exec app \
+    php bin/console doctrine:migrations:status
+```
+
+---
+
+## Verify Symfony
+
+Check the runtime environment.
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml exec app \
+    php bin/console about
+```
+
+Production must report:
+
+```text
+Environment  prod
+Debug        false
+```
+
+---
+
+## Host Reverse Proxy
+
+The host Nginx reverse proxy must point to the production Docker port.
+
+Standard configuration:
+
+```nginx
+proxy_pass http://127.0.0.1:8100;
+```
+
+If MOA returns a `502 Bad Gateway`, first verify that the Docker production stack is actually exposing port `8100`:
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml ps
+```
+
+Do not change the host Nginx port simply to match an accidentally started development stack.
+
+---
+
+## Final Verification
+
+Verify the public endpoint:
+
+```bash
+curl -I https://<your-moa-domain>/
+```
+
+A successful installation should return either:
+
+```text
+HTTP 302 → /login
+```
+
+or an authenticated application response.
+
+MOA is then ready for use.
