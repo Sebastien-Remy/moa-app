@@ -2,19 +2,19 @@
 
 namespace App\Service;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use App\Entity\User;
 use InvalidArgumentException;
 use RuntimeException;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class UserService
+final readonly class UserService
 {
     public function __construct(
-        private readonly UserRepository $userRepository,
-        private readonly EntityManagerInterface $entityManager,
-        private readonly UserPasswordHasherInterface $passwordHasher,
+        private UserRepository $userRepository,
+        private EntityManagerInterface $entityManager,
+        private UserPasswordHasherInterface $passwordHasher,
     ) {
     }
 
@@ -23,7 +23,9 @@ class UserService
         string $plainPassword,
     ): User {
         if ($this->userRepository->hasOwner()) {
-            throw new RuntimeException('An owner already exists.');
+            throw new RuntimeException(
+                'An owner already exists.',
+            );
         }
 
         $username = trim($username);
@@ -33,10 +35,14 @@ class UserService
         $this->validatePassword($plainPassword);
 
         $user = new User();
+
         $user->setUsername($username);
         $user->setRoles(['ROLE_OWNER']);
         $user->setPassword(
-            $this->passwordHasher->hashPassword($user, $plainPassword),
+            $this->passwordHasher->hashPassword(
+                $user,
+                $plainPassword,
+            ),
         );
 
         $this->entityManager->persist($user);
@@ -49,8 +55,10 @@ class UserService
     {
         $owner = $this->userRepository->findOwner();
 
-        if (null === $owner) {
-            throw new RuntimeException('No owner account exists.');
+        if ($owner === null) {
+            throw new RuntimeException(
+                'No owner account exists.',
+            );
         }
 
         return $owner;
@@ -62,23 +70,31 @@ class UserService
     ): User {
         $owner = $this->userRepository->findOwner();
 
-        if (null === $owner) {
-            throw new RuntimeException('No owner account exists.');
+        if ($owner === null) {
+            throw new RuntimeException(
+                'No owner account exists.',
+            );
         }
 
         $username = trim($newUsername ?? '');
 
-        if ('' === $username) {
+        if ($username === '') {
             $username = $owner->getUsername();
         }
 
         $this->validateUsername($username);
-        $this->ensureUsernameIsAvailable($username, $owner);
+        $this->ensureUsernameIsAvailable(
+            $username,
+            $owner,
+        );
         $this->validatePassword($plainPassword);
 
         $owner->setUsername($username);
         $owner->setPassword(
-            $this->passwordHasher->hashPassword($owner, $plainPassword),
+            $this->passwordHasher->hashPassword(
+                $owner,
+                $plainPassword,
+            ),
         );
 
         $this->entityManager->flush();
@@ -112,13 +128,20 @@ class UserService
             'username' => $username,
         ]);
 
-        if (
-            null !== $existingUser
-            && $existingUser->getId() !== $ignoredUser?->getId()
-        ) {
-            throw new InvalidArgumentException(
-                'This username is already in use.',
-            );
+        if ($existingUser === null) {
+            return;
         }
+
+        if (
+            $ignoredUser !== null
+            && (string) $existingUser->getId()
+            === (string) $ignoredUser->getId()
+        ) {
+            return;
+        }
+
+        throw new InvalidArgumentException(
+            'This username is already in use.',
+        );
     }
 }

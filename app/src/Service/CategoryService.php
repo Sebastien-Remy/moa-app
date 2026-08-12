@@ -15,7 +15,6 @@ final readonly class CategoryService
 
     public function save(Category $category): void
     {
-        $this->validateParent($category);
         $this->validateHierarchy($category);
 
         $this->entityManager->persist($category);
@@ -32,31 +31,6 @@ final readonly class CategoryService
 
         $this->entityManager->remove($category);
         $this->entityManager->flush();
-    }
-
-    private function validateParent(Category $category): void
-    {
-        $parent = $category->getParent();
-
-        if ($parent === null) {
-            return;
-        }
-
-        if ($parent === $category) {
-            throw new BusinessRuleException(
-                'A category cannot be its own parent.',
-            );
-        }
-
-        if (
-            $category->getId() !== null
-            && $parent->getId() !== null
-            && (string) $category->getId() === (string) $parent->getId()
-        ) {
-            throw new BusinessRuleException(
-                'A category cannot be its own parent.',
-            );
-        }
     }
 
     private function validateHierarchy(Category $category): void

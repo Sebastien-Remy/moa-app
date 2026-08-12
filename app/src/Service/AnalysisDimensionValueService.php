@@ -15,7 +15,6 @@ final readonly class AnalysisDimensionValueService
 
     public function save(AnalysisDimensionValue $value): void
     {
-        $this->validateParent($value);
         $this->validateHierarchy($value);
         $this->validateParentDimension($value);
 
@@ -31,34 +30,14 @@ final readonly class AnalysisDimensionValueService
             );
         }
 
+        if (!$value->getAnalysisDimensionAssignments()->isEmpty()) {
+            throw new BusinessRuleException(
+                'An analysis dimension value currently used by analyses cannot be deleted.'
+            );
+        }
+
         $this->entityManager->remove($value);
         $this->entityManager->flush();
-    }
-
-    private function validateParent(
-        AnalysisDimensionValue $value,
-    ): void {
-        $parent = $value->getParent();
-
-        if ($parent === null) {
-            return;
-        }
-
-        if ($parent === $value) {
-            throw new BusinessRuleException(
-                'An analysis dimension value cannot be its own parent.'
-            );
-        }
-
-        if (
-            $value->getId() !== null
-            && $parent->getId() !== null
-            && (string) $value->getId() === (string) $parent->getId()
-        ) {
-            throw new BusinessRuleException(
-                'An analysis dimension value cannot be its own parent.'
-            );
-        }
     }
 
     private function validateHierarchy(

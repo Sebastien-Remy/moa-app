@@ -32,12 +32,8 @@ final readonly class BankAccountService
             return;
         }
 
-        $iban = strtoupper(
-            str_replace(' ', '', trim($iban))
-        );
-
         $bankAccount->setIban(
-            $iban !== '' ? $iban : null
+            strtoupper(str_replace(' ', '', $iban))
         );
     }
 
@@ -58,7 +54,9 @@ final readonly class BankAccountService
             return;
         }
 
-        if ((string) $originalCurrency->getId() === (string) $currentCurrency->getId()) {
+        if (
+            (string) $originalCurrency->getId() === (string) $currentCurrency->getId()
+        ) {
             return;
         }
 

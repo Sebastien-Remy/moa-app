@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
+use App\DTO\StoredFileResolution;
 use App\Entity\StoredFile;
 use App\Repository\StoredFileRepository;
-use App\Service\Result\StoredFileResolution;
 use Doctrine\ORM\EntityManagerInterface;
 use finfo;
 use LogicException;
@@ -19,13 +19,12 @@ final readonly class StoredFileService
     ) {
     }
 
-    /**
-     * Resolve a source file into an existing or newly created StoredFile.
-     */
     public function resolve(
         string $sourcePath,
         string $originalFilename,
     ): StoredFileResolution {
+        $this->assertSourceFileExists($sourcePath);
+
         $checksum = $this->calculateChecksum($sourcePath);
 
         $existingStoredFile = $this->storedFileRepository
@@ -57,9 +56,6 @@ final readonly class StoredFileService
         );
     }
 
-    /**
-     * Generate the deterministic relative storage path for a StoredFile.
-     */
     public function getRelativePath(
         StoredFile $storedFile,
     ): string {
@@ -90,14 +86,25 @@ final readonly class StoredFileService
         );
     }
 
-    /**
-     * Calculate the SHA-256 checksum of a source file.
-     */
+    public function getAbsolutePath(
+        StoredFile $storedFile,
+    ): string {
+        $relativePath = $this->getRelativePath($storedFile);
+
+        if (!$this->storageService->exists($relativePath)) {
+            throw new RuntimeException(
+                'The stored file could not be found.',
+            );
+        }
+
+        return $this->storageService->getAbsolutePath(
+            $relativePath,
+        );
+    }
+
     private function calculateChecksum(
         string $sourcePath,
     ): string {
-        $this->assertSourceFileExists($sourcePath);
-
         $checksum = hash_file(
             'sha256',
             $sourcePath,
@@ -113,9 +120,6 @@ final readonly class StoredFileService
         return $checksum;
     }
 
-    /**
-     * Create a StoredFile entity from source file metadata.
-     */
     private function createStoredFile(
         string $sourcePath,
         string $originalFilename,
@@ -129,9 +133,6 @@ final readonly class StoredFileService
         );
     }
 
-    /**
-     * Detect the source file MIME type.
-     */
     private function detectMimeType(
         string $sourcePath,
     ): string {
@@ -148,9 +149,6 @@ final readonly class StoredFileService
         return $mimeType;
     }
 
-    /**
-     * Detect and normalize the original file extension.
-     */
     private function detectExtension(
         string $originalFilename,
     ): ?string {
@@ -166,9 +164,6 @@ final readonly class StoredFileService
         return strtolower($extension);
     }
 
-    /**
-     * Detect the source file size in bytes.
-     */
     private function detectFileSize(
         string $sourcePath,
     ): int {
@@ -184,9 +179,6 @@ final readonly class StoredFileService
         return $size;
     }
 
-    /**
-     * Ensure the source path references an existing file.
-     */
     private function assertSourceFileExists(
         string $sourcePath,
     ): void {
@@ -196,21 +188,5 @@ final readonly class StoredFileService
                 $sourcePath,
             ));
         }
-    }
-
-    public function getAbsolutePath(
-        StoredFile $storedFile,
-    ): string {
-        $relativePath = $this->getRelativePath($storedFile);
-
-        if (!$this->storageService->exists($relativePath)) {
-            throw new RuntimeException(
-                'The stored file could not be found.',
-            );
-        }
-
-        return $this->storageService->getAbsolutePath(
-            $relativePath,
-        );
     }
 }

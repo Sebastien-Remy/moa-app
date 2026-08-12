@@ -13,9 +13,6 @@ final readonly class DocumentService
     ) {
     }
 
-    /**
-     * Create a new document with the required metadata.
-     */
     public function create(
         \DateTimeImmutable $issuedAt,
         DocumentDirection $direction,
@@ -24,7 +21,6 @@ final readonly class DocumentService
 
         $document
             ->setIssuedAt($issuedAt)
-            ->setRecordedAt(new \DateTimeImmutable())
             ->setDirection($direction);
 
         $this->entityManager->persist($document);

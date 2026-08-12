@@ -17,6 +17,7 @@ final readonly class DocumentTransactionService
 
     public function save(DocumentTransaction $documentTransaction): void
     {
+        $this->validateRelations($documentTransaction);
         $this->validateAmount($documentTransaction);
         $this->validateCurrencies($documentTransaction);
         $this->validateUniquePair($documentTransaction);
@@ -25,6 +26,19 @@ final readonly class DocumentTransactionService
 
         $this->entityManager->persist($documentTransaction);
         $this->entityManager->flush();
+    }
+
+    private function validateRelations(
+        DocumentTransaction $documentTransaction,
+    ): void {
+        if (
+            $documentTransaction->getDocument() === null
+            || $documentTransaction->getBankTransaction() === null
+        ) {
+            throw new BusinessRuleException(
+                'A reconciliation requires both a document and a bank transaction.'
+            );
+        }
     }
 
     private function validateAmount(
@@ -40,13 +54,15 @@ final readonly class DocumentTransactionService
     private function validateCurrencies(
         DocumentTransaction $documentTransaction,
     ): void {
-        $documentCurrency = $documentTransaction
-            ->getDocument()
-            ?->getCurrency();
+        $document = $documentTransaction->getDocument();
+        $bankTransaction = $documentTransaction->getBankTransaction();
 
-        $bankCurrency = $documentTransaction
-            ->getBankTransaction()
-            ?->getBankAccount()
+        \assert($document !== null);
+        \assert($bankTransaction !== null);
+
+        $documentCurrency = $document->getCurrency();
+        $bankCurrency = $bankTransaction
+            ->getBankAccount()
             ?->getCurrency();
 
         if ($documentCurrency === null) {
@@ -77,11 +93,8 @@ final readonly class DocumentTransactionService
         $document = $documentTransaction->getDocument();
         $bankTransaction = $documentTransaction->getBankTransaction();
 
-        if ($document === null || $bankTransaction === null) {
-            throw new BusinessRuleException(
-                'A reconciliation requires both a document and a bank transaction.'
-            );
-        }
+        \assert($document !== null);
+        \assert($bankTransaction !== null);
 
         if (
             $this->documentTransactionRepository->existsForPair(
@@ -101,11 +114,7 @@ final readonly class DocumentTransactionService
     ): void {
         $document = $documentTransaction->getDocument();
 
-        if ($document === null) {
-            throw new BusinessRuleException(
-                'A reconciliation requires a document.'
-            );
-        }
+        \assert($document !== null);
 
         $documentAmount = $document->getTotalAmount();
 
@@ -135,11 +144,7 @@ final readonly class DocumentTransactionService
     ): void {
         $bankTransaction = $documentTransaction->getBankTransaction();
 
-        if ($bankTransaction === null) {
-            throw new BusinessRuleException(
-                'A reconciliation requires a bank transaction.'
-            );
-        }
+        \assert($bankTransaction !== null);
 
         $transactionAmount = abs($bankTransaction->getAmount());
 

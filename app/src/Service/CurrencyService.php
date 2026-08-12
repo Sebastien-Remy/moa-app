@@ -33,8 +33,7 @@ final readonly class CurrencyService
         $this->normalizeCode($currency);
 
         if (
-            !$currency->isActive() &&
-            $currency->isDefault()
+            !$currency->isActive() && $currency->isDefault()
         ) {
             throw new BusinessRuleException(
                 'The default currency must remain active.'
@@ -66,11 +65,17 @@ final readonly class CurrencyService
             'isDefault' => true,
         ]);
 
-        if (
-            $defaultCurrency !== null &&
-            $defaultCurrency->getId() !== $currency->getId()
-        ) {
-            $defaultCurrency->setIsDefault(false);
+        if ($defaultCurrency === null) {
+            return;
         }
+
+        if (
+            (string) $defaultCurrency->getId()
+            === (string) $currency->getId()
+        ) {
+            return;
+        }
+
+        $defaultCurrency->setIsDefault(false);
     }
 }

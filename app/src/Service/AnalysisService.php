@@ -36,8 +36,10 @@ final readonly class AnalysisService
 
     private function validateSourceCurrency(Analysis $analysis): void
     {
-        if ($analysis->getDocument() !== null) {
-            if ($analysis->getDocument()->getCurrency() === null) {
+        $document = $analysis->getDocument();
+
+        if ($document !== null) {
+            if ($document->getCurrency() === null) {
                 throw new BusinessRuleException(
                     'The selected document must have a currency before it can be analysed.'
                 );

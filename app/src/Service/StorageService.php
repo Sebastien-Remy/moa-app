@@ -11,18 +11,14 @@ final readonly class StorageService
     ) {
     }
 
-    /**
-     * Resolve an absolute filesystem path from a relative path.
-     */
     public function getAbsolutePath(
         string $relativePath,
     ): string {
-        return $this->documentStoragePath . '/' . ltrim($relativePath, '/');
+        return rtrim($this->documentStoragePath, '/')
+            . '/'
+            . ltrim($relativePath, '/');
     }
 
-    /**
-     * Check whether a stored file exists.
-     */
     public function exists(
         string $relativePath,
     ): bool {
@@ -31,9 +27,6 @@ final readonly class StorageService
         );
     }
 
-    /**
-     * Store a file at the given relative path.
-     */
     public function store(
         string $sourcePath,
         string $relativePath,
@@ -74,9 +67,6 @@ final readonly class StorageService
         }
     }
 
-    /**
-     * Delete a stored file.
-     */
     public function delete(
         string $relativePath,
     ): void {

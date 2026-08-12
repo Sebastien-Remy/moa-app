@@ -42,10 +42,8 @@ final readonly class AnalysisDimensionService
             return;
         }
 
-        $code = strtoupper(trim($code));
-
         $analysisDimension->setCode(
-            $code !== '' ? $code : null
+            strtoupper($code)
         );
     }
 }

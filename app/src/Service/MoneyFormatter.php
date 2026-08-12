@@ -21,8 +21,10 @@ final readonly class MoneyFormatter
             $currency->getDecimalPlaces(),
         );
 
+        $divisor = 10 ** $currency->getDecimalPlaces();
+
         $formatted = $formatter->formatCurrency(
-            $amount / (10 ** $currency->getDecimalPlaces()),
+            $amount / $divisor,
             $currency->getCode(),
         );
 

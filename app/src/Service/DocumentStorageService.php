@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
+use App\DTO\StoredFileResolution;
 use App\Entity\Document;
 use App\Entity\DocumentFile;
-use App\Service\Result\StoredFileResolution;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Throwable;
@@ -54,10 +54,6 @@ final readonly class DocumentStorageService
         }
     }
 
-
-    /**
-     * Remove a newly stored physical file after a failed document creation.
-     */
     private function cleanupFailedStorage(
         ?StoredFileResolution $resolution,
     ): void {
