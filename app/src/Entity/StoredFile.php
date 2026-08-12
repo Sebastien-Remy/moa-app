@@ -32,7 +32,7 @@ class StoredFile
         message: 'The extension contains invalid characters.',
     )]
     #[Assert\Length(max: 20)]
-    private ?string $extension;
+    private ?string $extension = null;
 
     #[ORM\Column(type: Types::BIGINT)]
     #[Assert\PositiveOrZero]
@@ -69,6 +69,10 @@ class StoredFile
         $extension = $extension !== null
             ? strtolower(ltrim(trim($extension), '.'))
             : null;
+
+        if ($extension === '') {
+            $extension = null;
+        }
 
         if ($mimeType === '') {
             throw new InvalidArgumentException('The MIME type cannot be empty.');

@@ -46,7 +46,8 @@ class AnalysisDimension
     /**
      * @var Collection<int, AnalysisDimensionValue>
      */
-    #[ORM\OneToMany(targetEntity: AnalysisDimensionValue::class, mappedBy: 'analysisDimension')]
+    #[ORM\OneToMany(targetEntity: AnalysisDimensionValue::class,
+        mappedBy: 'analysisDimension')]
     private Collection $values;
 
     public function __construct()

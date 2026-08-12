@@ -79,7 +79,11 @@ class Document
     /**
      * @var Collection<int, DocumentFile>
      */
-    #[ORM\OneToMany(targetEntity: DocumentFile::class, mappedBy: 'document', orphanRemoval: true)]
+    #[ORM\OneToMany(
+        targetEntity: DocumentFile::class,
+        mappedBy: 'document',
+        orphanRemoval: true,
+    )]
     private Collection $documentFiles;
 
     public function __construct()
@@ -288,6 +292,30 @@ class Document
         return $this;
     }
 
+    /**
+     * @return Collection<int, DocumentFile>
+     */
+    public function getDocumentFiles(): Collection
+    {
+        return $this->documentFiles;
+    }
+
+    public function addDocumentFile(DocumentFile $documentFile): static
+    {
+        if (!$this->documentFiles->contains($documentFile)) {
+            $this->documentFiles->add($documentFile);
+        }
+
+        return $this;
+    }
+
+    public function removeDocumentFile(DocumentFile $documentFile): static
+    {
+        $this->documentFiles->removeElement($documentFile);
+
+        return $this;
+    }
+
     #[Assert\Callback]
     public function validateValidityPeriod(ExecutionContextInterface $context): void
     {
@@ -329,30 +357,6 @@ class Document
             ->addViolation();
     }
 
-    /**
-     * @return Collection<int, DocumentFile>
-     */
-    public function getDocumentFiles(): Collection
-    {
-        return $this->documentFiles;
-    }
-
-    public function addDocumentFile(DocumentFile $documentFile): static
-    {
-        if (!$this->documentFiles->contains($documentFile)) {
-            $this->documentFiles->add($documentFile);
-        }
-
-        return $this;
-    }
-
-    public function removeDocumentFile(DocumentFile $documentFile): static
-    {
-        $this->documentFiles->removeElement($documentFile);
-
-        return $this;
-    }
-
     public function getDisplayName(): string
     {
         $parts = [];
@@ -361,7 +365,7 @@ class Document
             $parts[] = $this->issuedAt->format('Y-m-d');
         }
 
-        if ($this->thirdParty !== null && $this->thirdParty->getName() !== null) {
+        if ($this->thirdParty !== null) {
             $parts[] = $this->thirdParty->getName();
         }
 

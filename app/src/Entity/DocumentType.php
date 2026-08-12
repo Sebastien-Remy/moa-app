@@ -46,7 +46,6 @@ class DocumentType
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
-
     #[ORM\OneToMany(
         targetEntity: Document::class,
         mappedBy: 'documentType',
@@ -58,7 +57,6 @@ class DocumentType
     {
         $this->documents = new ArrayCollection();
     }
-
 
     public function getId(): ?Ulid
     {
