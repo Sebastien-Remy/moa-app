@@ -1,4 +1,111 @@
 # Releases
+
+# v0.6.0
+
+## Overview
+
+Version 0.6 establishes the financial foundations of MOA.
+
+This release introduces the complete financial domain model together with a major architectural cleanup across the project. The codebase now follows a consistent Entity → Repository → Service → EasyAdmin architecture, providing a solid foundation for future accounting, reconciliation and analytical features.
+
+---
+
+## Added
+
+### Financial model
+
+- Currency management (ISO 4217)
+- Bank accounts
+- Bank transactions
+- Document reconciliation
+- Analytical categories
+- Analytical dimensions
+- Analytical dimension values
+- Analytical assignments
+- Financial analyses
+- Multi-dimensional analytical model
+
+### Business rules
+
+- Partial reconciliation
+- Split reconciliation
+- Currency consistency validation
+- Remaining amount validation
+- Duplicate reconciliation prevention
+- Default currency management
+- Financial integrity validation
+
+### Administration
+
+- Complete EasyAdmin support for the financial model
+- Dedicated CRUD controllers
+- Money formatting
+- Read-only technical administration for stored files
+- Improved search, sorting and detail pages
+
+---
+
+## Changed
+
+### Architecture
+
+- Introduced a service-oriented business layer.
+- Centralized business rules into dedicated services.
+- Unified CRUD controllers through `BaseCrudController`.
+- Standardized create, update and delete workflows.
+
+### Doctrine
+
+- Reviewed entity mappings.
+- Improved indexes.
+- Reviewed foreign key deletion policies.
+- Harmonized ULID handling.
+- Improved repository queries.
+
+### Entities
+
+- Consistent `getDisplayName()` implementations.
+- Consistent `__toString()` implementations.
+- Improved validation callbacks.
+- Normalized setters.
+- Improved collection handling.
+
+### Code quality
+
+- Repository cleanup.
+- Service cleanup.
+- EasyAdmin cleanup.
+- Entity cleanup.
+- PHPStan level 6 with zero errors.
+- Symfony container validation.
+- Doctrine schema validation.
+
+---
+
+## Internal improvements
+
+- Consistent coding conventions.
+- Improved project structure.
+- Reduced duplicated business logic.
+- Better separation of responsibilities.
+- Improved maintainability.
+
+---
+
+## Ready for
+
+The project is now ready to support future developments including:
+
+- Bank statement imports
+- Assisted reconciliation
+- Budgeting
+- Forecasting
+- Accounting exports
+- Third-party reporting
+- Profitability analysis
+
+---
+
 ## v0.5.1
 
 ### Name

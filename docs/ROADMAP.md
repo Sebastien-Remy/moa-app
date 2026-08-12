@@ -2,6 +2,8 @@
 
 # v0.6 — Financial Core
 
+**Status: Completed**
+
 ## Goal
 
 Introduce the first financial core in MOA.
@@ -2008,7 +2010,7 @@ This phase establishes the monetary convention used by every later entity.
 
 # v0.6 Completion Criteria
 
-v0.6 can be considered complete when:
+v0.6 is complete with the following capabilities:
 
 - Currency reference data exists.
 - ISO 4217 currency codes are supported.
@@ -2036,4 +2038,15 @@ v0.6 can be considered complete when:
 - Doctrine migrations are clean.
 - The full financial model can be exercised through EasyAdmin.
 
-At the end of **v0.6**, MOA will have a stable financial core capable of supporting future developments such as bank imports, reconciliation assistance, budgeting, forecasting, analytical reporting, third-party reporting, profitability analysis and accounting exports.
+The v0.6 cleanup and validation pass also established:
+
+- A consistent Entity → Repository → Service → EasyAdmin architecture.
+- Centralized business-rule handling through services and `BusinessRuleException`.
+- Consistent create, update and delete workflows in EasyAdmin.
+- Reviewed Doctrine indexes, relations and deletion policies.
+- Consistent ULID handling across the financial model.
+- Clean entity mappings, validation rules and display names.
+- PHPStan level 6 with zero errors.
+
+At the end of **v0.6**, MOA has a stable financial core capable of supporting future developments such as bank imports, reconciliation assistance, budgeting, forecasting, analytical reporting, third-party reporting, profitability analysis and accounting exports.
+
