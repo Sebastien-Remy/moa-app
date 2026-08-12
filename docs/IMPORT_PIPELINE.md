@@ -1,6 +1,8 @@
 # Import Pipeline
 
-This document describes the standard document import workflow used by MOA.
+This document describes the standard document import workflow implemented by MOA.
+
+It focuses on the technical execution of a document import rather than the business concepts documented in the GitHub Wiki.
 
 Every document entering the application must follow this pipeline.
 
@@ -10,7 +12,7 @@ The goal is to guarantee consistent document creation, duplicate detection and p
 
 # Philosophy
 
-MOA supports exactly one document import workflow.
+MOA defines a single document import workflow.
 
 Whether a document comes from:
 
@@ -27,9 +29,11 @@ the same application workflow must always be executed.
 
 No interface may bypass `DocumentImportService`.
 
+This guarantees that every imported document follows the same business rules and storage process.
+
 ---
 
-# Overall workflow
+# Overall Workflow
 
 ```text
 Interface
@@ -49,7 +53,9 @@ DocumentImportService
         │
         ├────────► DocumentService
         │
-        └────────► DocumentFile
+        ├────────► DocumentFile
+        │
+        └────────► Doctrine Transaction
 ```
 
 The interface collects user input.
@@ -60,7 +66,7 @@ The application service coordinates the complete workflow.
 
 ---
 
-# Form model
+# Form Model
 
 The current EasyAdmin interface uses:
 
@@ -101,9 +107,11 @@ The same DTO can later be created by:
 - email importers;
 - scanner integrations.
 
+Application DTOs remain independent from the interface used to create them.
+
 ---
 
-# Stored file resolution
+# Stored File Resolution
 
 `DocumentImportService` delegates file resolution to `StoredFileService`.
 
@@ -112,9 +120,9 @@ The same DTO can later be created by:
 - validates the source file;
 - calculates the SHA-256 checksum;
 - searches for an existing `StoredFile`;
-- detects MIME type;
-- detects extension;
-- detects file size.
+- detects the MIME type;
+- detects the file extension;
+- detects the file size.
 
 If a matching checksum already exists:
 
@@ -124,19 +132,19 @@ If a matching checksum already exists:
 Otherwise:
 
 - a new `StoredFile` entity is created;
-- the deterministic relative storage path is generated;
+- the deterministic storage path is generated;
 - the physical file is stored through `StorageService`.
 
 ---
 
-# Deterministic storage path
+# Deterministic Storage Path
 
 The physical filename never depends on the original filename.
 
 It is generated from:
 
 - the `StoredFile` ULID;
-- the normalized extension.
+- the normalized file extension.
 
 Example:
 
@@ -152,23 +160,25 @@ The relative path is never stored in the database.
 
 It can always be recalculated from the `StoredFile`.
 
+This guarantees deterministic and stable storage paths.
+
 ---
 
-# Document creation
+# Document Creation
 
 Once the stored file has been resolved, `DocumentService` creates the corresponding `Document`.
 
 The service currently assigns:
 
-- the document date;
+- the issue date;
 - the recording date;
 - the document direction.
 
-Additional metadata may be completed afterwards.
+Additional metadata may be completed afterwards by the user.
 
 ---
 
-# Document attachment
+# Document Attachment
 
 The relationship between a `Document` and a `StoredFile` is represented by `DocumentFile`.
 
@@ -180,11 +190,13 @@ The constructor:
 
 Several documents may therefore reference the same physical `StoredFile`.
 
+This enables physical file deduplication while preserving document independence.
+
 ---
 
 # Transaction
 
-`DocumentImportService` executes the import inside a Doctrine transaction.
+`DocumentImportService` executes the complete workflow inside a Doctrine transaction.
 
 A successful import creates:
 
@@ -200,9 +212,13 @@ If the transaction fails:
 
 This behavior is implemented using `StoredFileResolution`.
 
+The database and filesystem therefore remain consistent at all times.
+
 ---
 
 # Responsibilities
+
+Each component has a single responsibility.
 
 ## DocumentImportService
 
@@ -218,11 +234,13 @@ Performs physical filesystem operations only.
 
 ## DocumentService
 
-Creates the document.
+Creates and persists the business document.
 
 ## DocumentFile
 
-Represents the attachment relationship.
+Represents the attachment relationship between a document and a stored file.
+
+No business rule should be duplicated between these components.
 
 ---
 
@@ -232,7 +250,7 @@ EasyAdmin is currently the first interface using the standard import pipeline.
 
 The standard **New** action is disabled for documents.
 
-Documents are created exclusively through the dedicated **Import document** action.
+Documents are created exclusively through the dedicated **Import Document** action.
 
 EasyAdmin:
 
@@ -245,7 +263,7 @@ It contains no document import business rules.
 
 ---
 
-# Future extensions
+# Future Import Sources
 
 The import pipeline is intentionally independent from the import source.
 
@@ -262,3 +280,18 @@ Examples include:
 - AI-assisted document processing.
 
 The business workflow should remain unchanged.
+
+---
+
+# Design Principles
+
+The import pipeline follows a few simple principles.
+
+- Every document follows the same import workflow.
+- Interfaces remain thin.
+- Application DTOs remain independent from interface frameworks.
+- Business rules are centralized in services.
+- Physical storage is independent from business data.
+- Duplicate files are detected automatically.
+- Database and filesystem consistency are guaranteed through transactions.
+- New import sources should reuse the existing pipeline.

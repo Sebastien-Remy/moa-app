@@ -2,7 +2,7 @@
 
 # v0.6 — Financial Core
 
-**Status: Completed**
+**Status:** Completed
 
 ## Goal
 

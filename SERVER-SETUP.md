@@ -1,6 +1,10 @@
 # Server Setup
 
-This document describes the standard production installation procedure for MOA.
+This document describes the standard production deployment procedure for MOA.
+
+For local development, see the Installation guide in the GitHub Wiki.
+
+---
 
 ## Requirements
 
@@ -10,7 +14,9 @@ This document describes the standard production installation procedure for MOA.
 - Docker Compose v2
 - OpenSSL
 
-## Clone the repository
+---
+
+## Clone the Repository
 
 ```bash
 cd /opt/services
@@ -20,22 +26,35 @@ git clone https://github.com/Sebastien-Remy/moa-app.git
 cd moa-app
 ```
 
-## Checkout the release
+---
+
+## Checkout the Release
+
+Fetch the available tags.
 
 ```bash
 git fetch --tags
-git checkout v0.2.1
 ```
 
-## Create the production environment
+Checkout the desired release.
 
-Copy the environment template:
+```bash
+git checkout <release-tag>
+```
+
+Replace `<release-tag>` with the version you want to deploy (for example `v0.6.0`).
+
+---
+
+## Create the Production Environment
+
+Copy the environment template.
 
 ```bash
 cp .env.example .env
 ```
 
-Generate secure secrets automatically:
+Generate secure secrets automatically.
 
 ```bash
 set -e
@@ -54,3 +73,35 @@ echo "Production environment created successfully."
 ```
 
 The generated secrets are stored only in the local `.env` file and are never committed to Git.
+
+---
+
+## Start the Application
+
+Start the Docker services.
+
+```bash
+docker compose up -d
+```
+
+---
+
+## Run Database Migrations
+
+Initialize the database schema.
+
+```bash
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+```
+
+---
+
+## Verify the Installation
+
+Check that the containers are running.
+
+```bash
+docker compose ps
+```
+
+The MOA application should now be available and ready for the initial owner account creation.
