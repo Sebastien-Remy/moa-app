@@ -46,6 +46,9 @@ class DocumentType
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
+    /**
+     * @var Collection<int, Document>
+     */
     #[ORM\OneToMany(
         targetEntity: Document::class,
         mappedBy: 'documentType',

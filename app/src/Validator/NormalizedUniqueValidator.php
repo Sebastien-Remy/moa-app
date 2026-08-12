@@ -48,8 +48,14 @@ class NormalizedUniqueValidator extends ConstraintValidator
             return;
         }
 
-        $repository = $this->entityManager->getRepository($value::class);
-        $metadata = $this->entityManager->getClassMetadata($value::class);
+        if (!is_object($value)) {
+            return;
+        }
+
+        $entityClass = get_class($value);
+
+        $repository = $this->entityManager->getRepository($entityClass);
+        $metadata = $this->entityManager->getClassMetadata($entityClass);
 
         $currentIdentifiers = $metadata->getIdentifierValues($value);
 

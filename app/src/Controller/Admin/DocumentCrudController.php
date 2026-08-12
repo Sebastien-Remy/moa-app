@@ -349,12 +349,6 @@ final class DocumentCrudController extends BaseCrudController
 
         $formName = $context->getEntity()->getName();
 
-        if ($formName === null) {
-            throw new \LogicException(
-                'Unable to determine the EasyAdmin form name.',
-            );
-        }
-
         $formFiles = $context
             ->getRequest()
             ->files

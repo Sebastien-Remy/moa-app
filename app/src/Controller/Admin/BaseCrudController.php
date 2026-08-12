@@ -5,6 +5,11 @@ namespace App\Controller\Admin;
 use App\Exception\BusinessRuleException;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 
+/**
+
+ * @extends AbstractCrudController<object>
+
+ */
 abstract class BaseCrudController extends AbstractCrudController
 {
     protected function executeBusinessAction(

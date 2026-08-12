@@ -92,9 +92,17 @@
       <path value="$PROJECT_DIR$/app/vendor/symfony/asset" />
       <path value="$PROJECT_DIR$/app/vendor/twig/html-extra" />
       <path value="$PROJECT_DIR$/app/vendor/easycorp/easyadmin-bundle" />
+      <path value="$PROJECT_DIR$/app/vendor/phpstan/phpstan" />
+      <path value="$PROJECT_DIR$/app/vendor/phpstan/phpstan-doctrine" />
+      <path value="$PROJECT_DIR$/app/vendor/phpstan/phpstan-symfony" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.4" />
+  <component name="PhpStan">
+    <PhpStan_settings>
+      <PhpStanConfiguration tool_path="$PROJECT_DIR$/app/vendor/bin/phpstan" />
+    </PhpStan_settings>
+  </component>
   <component name="PhpStanOptionsConfiguration">
     <option name="transferred" value="true" />
   </component>

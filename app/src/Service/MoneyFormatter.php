@@ -23,6 +23,7 @@ final readonly class MoneyFormatter
 
         $divisor = 10 ** $currency->getDecimalPlaces();
 
+        /** @var string|false $formatted */
         $formatted = $formatter->formatCurrency(
             $amount / $divisor,
             $currency->getCode(),

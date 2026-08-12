@@ -46,6 +46,9 @@ class Status
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
+    /**
+     * @var Collection<int, Document>
+     */
     #[ORM\OneToMany(
         targetEntity: Document::class,
         mappedBy: 'status',
@@ -57,7 +60,7 @@ class Status
     {
         $this->documents = new ArrayCollection();
     }
-    
+
     public function getId(): ?Ulid
     {
         return $this->id;

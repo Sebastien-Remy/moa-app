@@ -28,6 +28,12 @@ final readonly class DocumentTransactionService
         $this->entityManager->flush();
     }
 
+    public function delete(DocumentTransaction $documentTransaction): void
+    {
+        $this->entityManager->remove($documentTransaction);
+        $this->entityManager->flush();
+    }
+
     private function validateRelations(
         DocumentTransaction $documentTransaction,
     ): void {

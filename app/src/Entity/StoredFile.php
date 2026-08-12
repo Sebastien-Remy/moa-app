@@ -90,8 +90,10 @@ class StoredFile
 
         if (
             $extension !== null
-            && $extension !== ''
-            && !preg_match('/^[a-z0-9]+(?:[._+-][a-z0-9]+)*$/', $extension)
+            && !preg_match(
+                '/^[a-z0-9]+(?:[._+-][a-z0-9]+)*$/',
+                $extension,
+            )
         ) {
             throw new InvalidArgumentException(
                 'The extension contains invalid characters.',
@@ -99,7 +101,7 @@ class StoredFile
         }
 
         $this->mimeType = $mimeType;
-        $this->extension = $extension !== '' ? $extension : null;
+        $this->extension = $extension;
         $this->size = $size;
         $this->checksum = $checksum;
         $this->importedAt = new \DateTimeImmutable();
