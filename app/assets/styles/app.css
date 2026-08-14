@@ -1,1 +1,21 @@
 /* MOA application styles */
+:root {
+    --moa-header-height: 64px;
+    --moa-sidebar-width: 240px;
+    --moa-content-max-width: 1600px;
+}
+
+body {
+    min-width: 320px;
+}
+
+main {
+    min-width: 0;
+}
+
+@media (min-width: 992px) {
+    .moa-sidebar {
+        width: var(--moa-sidebar-width);
+        flex: 0 0 var(--moa-sidebar-width);
+    }
+}
