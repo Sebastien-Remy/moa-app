@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Import document | MOA{% endblock %}
+
+{% block body %}
+    <div class="container py-4">
+
+        <twig:PageHeader
+            :breadcrumb="[
+                {
+                    label: 'Documents',
+                    href: path('app_document_index')
+                },
+                {
+                    label: 'Import'
+                }
+            ]"
+            title="Import document"
+            description="Select a PDF document to start importing it into MOA."
+        />
+
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-6">
+
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+
+                        {{ form_start(form) }}
+
+                        {{ form_row(form.uploadedFile) }}
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+
+                            <a
+                                href="{{ path('app_document_index') }}"
+                                class="btn btn-outline-secondary"
+                            >
+                                Cancel
+                            </a>
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                            >
+                                <i class="fa-solid fa-file-import me-2"></i>
+                                Import document
+                            </button>
+
+                        </div>
+
+                        {{ form_end(form) }}
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

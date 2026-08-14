@@ -22,24 +22,37 @@ final readonly class DocumentStorageService
         Document $document,
         UploadedFile $file,
     ): void {
+        $this->storeFromSource(
+            document: $document,
+            sourcePath: $file->getPathname(),
+            originalFilename: $file->getClientOriginalName(),
+        );
+    }
+
+    public function storeFromSource(
+        Document $document,
+        string $sourcePath,
+        string $originalFilename,
+    ): void {
         $resolution = null;
 
         try {
             $this->entityManager->wrapInTransaction(
                 function () use (
                     $document,
-                    $file,
+                    $sourcePath,
+                    $originalFilename,
                     &$resolution,
                 ): void {
                     $resolution = $this->storedFileService->resolve(
-                        sourcePath: $file->getPathname(),
-                        originalFilename: $file->getClientOriginalName(),
+                        sourcePath: $sourcePath,
+                        originalFilename: $originalFilename,
                     );
 
                     $this->entityManager->persist($document);
 
                     $documentFile = new DocumentFile(
-                        originalName: $file->getClientOriginalName(),
+                        originalName: $originalFilename,
                         document: $document,
                         storedFile: $resolution->getStoredFile(),
                     );

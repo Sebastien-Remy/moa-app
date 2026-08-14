@@ -17,9 +17,14 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * @extends AbstractType<Document>
+ */
 final class DocumentType extends AbstractType
 {
     public function buildForm(
@@ -33,6 +38,7 @@ final class DocumentType extends AbstractType
             ->add('issuedAt', DateType::class, [
                 'label' => 'Document Date',
                 'widget' => 'single_text',
+                'required' => false,
             ])
             ->add('direction', ChoiceType::class, [
                 'choices' => [
@@ -84,6 +90,27 @@ final class DocumentType extends AbstractType
             ->add('notes', TextareaType::class, [
                 'required' => false,
             ]);
+
+        $builder->addEventListener(
+            FormEvents::SUBMIT,
+            static function (FormEvent $event) use ($currency): void {
+                $document = $event->getData();
+
+                if (!$document instanceof Document) {
+                    return;
+                }
+
+                if ($document->getTotalAmount() === null) {
+                    $document->setCurrency(null);
+
+                    return;
+                }
+
+                if ($document->getCurrency() === null) {
+                    $document->setCurrency($currency);
+                }
+            },
+        );
     }
 
     public function configureOptions(

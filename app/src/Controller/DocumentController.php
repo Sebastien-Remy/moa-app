@@ -117,10 +117,6 @@ final class DocumentController extends BaseController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if ($document->getCurrency() === null) {
-                $document->setCurrency($currency);
-            }
-
             if ($this->executeBusinessAction(
                 fn () => $documentService->save($document),
             )) {

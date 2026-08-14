@@ -22,8 +22,10 @@ class Document
     #[ORM\Column(type: 'ulid', unique: true)]
     private ?Ulid $id = null;
 
-    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
-    #[Assert\NotNull]
+    #[ORM\Column(
+        type: Types::DATE_IMMUTABLE,
+        nullable: true,
+    )]
     private ?\DateTimeImmutable $issuedAt = null;
 
     #[ORM\Column(enumType: DocumentDirection::class)]
@@ -103,7 +105,7 @@ class Document
         return $this->issuedAt;
     }
 
-    public function setIssuedAt(\DateTimeImmutable $issuedAt): static
+    public function setIssuedAt(?\DateTimeImmutable $issuedAt): static
     {
         $this->issuedAt = $issuedAt;
 

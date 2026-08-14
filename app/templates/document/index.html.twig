@@ -4,9 +4,19 @@
 
 {% block body %}
     <div class="container-fluid py-4">
+        {% set actions %}
+            <a
+                href="{{ path('app_document_import') }}"
+                class="btn btn-primary"
+            >
+                <i class="fa-solid fa-file-import me-2"></i>
+                Import document
+            </a>
+        {% endset %}
         <twig:PageHeader
             title="Documents"
             description="Browse and manage your documents."
+            :actions="actions"
         />
 
         <twig:DataTable
@@ -30,7 +40,13 @@
                     {% set document = row.document %}
 
                     <tr>
-                        <td>{{ document.issuedAt|date('Y-m-d') }}</td>
+                        <td>
+                            {% if document.issuedAt %}
+                                {{ document.issuedAt|date('Y-m-d') }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
                         <td>{{ document.thirdParty ?? '—' }}</td>
                         <td>{{ document.reference ?? '—' }}</td>
                         <td>{{ document.folder ?? '—' }}</td>
