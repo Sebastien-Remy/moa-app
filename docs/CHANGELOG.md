@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.7
+### Added
+
+- User-facing document import workflow.
+- Import page outside EasyAdmin.
+- Automatic creation of documents from uploaded PDFs.
+- Redirect to document edit after import.
+- Shared document storage pipeline between EasyAdmin and frontend.
+
+### Changed
+
+- `Document.issuedAt` is now optional.
+- Improved document storage service to support multiple import sources.
+- Default currency is no longer assigned when no amount is provided.
+- 
 ## v0.4.0 - First Document Import
 
 Released
