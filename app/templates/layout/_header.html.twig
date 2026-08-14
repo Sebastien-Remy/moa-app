@@ -1,0 +1,44 @@
+<header class="border-bottom">
+    <nav class="navbar">
+        <div class="container-fluid">
+            <button
+                class="navbar-toggler d-lg-none"
+                type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#mobileNavigation"
+                aria-controls="mobileNavigation"
+                aria-label="Open navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <a class="navbar-brand fw-semibold" href="{{ path('app_home') }}">
+                MOA
+            </a>
+        </div>
+    </nav>
+
+    <div
+        class="offcanvas offcanvas-start"
+        tabindex="-1"
+        id="mobileNavigation"
+        aria-labelledby="mobileNavigationLabel"
+    >
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title fs-5" id="mobileNavigationLabel">
+                MOA
+            </h2>
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+            ></button>
+        </div>
+
+        <div class="offcanvas-body">
+            {% include 'layout/_navigation.html.twig' %}
+        </div>
+    </div>
+</header>
