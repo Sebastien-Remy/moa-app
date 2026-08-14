@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit document | MOA{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <twig:PageHeader
+            :breadcrumb="[
+                {
+                  label: 'Documents',
+                    href: path('app_document_index')
+                },
+                {
+                    label: document.displayName,
+                    href: path('app_document_show', { id: document.id })
+                },
+                {
+                    label: 'Edit'
+                }
+            ]"
+            title="Edit document"
+            description="{{ document.displayName }}"
+        />
+
+        <div class="row g-4">
+            <div class="col-12 col-xl-7">
+                {{ form_start(form) }}
+
+                {{ form_widget(form) }}
+
+                <div class="d-flex gap-2 mt-4">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Save
+                    </button>
+
+                    <a
+                        href="{{ path('app_document_show', { id: document.id }) }}"
+                        class="btn btn-outline-secondary"
+                    >
+                        Cancel
+                    </a>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+
+            <div class="col-12 col-xl-5">
+                <twig:PdfPreview
+                    :src="path('app_document_file', { id: document.id })"
+                    title="Document preview"
+                />
+            </div>
+        </div>
+    </div>
+{% endblock %}

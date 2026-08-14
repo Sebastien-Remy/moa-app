@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Documents | MOA{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <twig:PageHeader
+            title="Documents"
+            description="Browse and manage your documents."
+        />
+
+        <twig:DataTable
+            :rows="rows"
+            emptyMessage="No documents found."
+        >
+            <twig:block name="header">
+                <tr>
+                    <th>Date</th>
+                    <th>Third party</th>
+                    <th>Reference</th>
+                    <th>Folder</th>
+                    <th>Status</th>
+                    <th class="text-end">Amount</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </twig:block>
+
+            <twig:block name="body">
+                {% for row in rows %}
+                    {% set document = row.document %}
+
+                    <tr>
+                        <td>{{ document.issuedAt|date('Y-m-d') }}</td>
+                        <td>{{ document.thirdParty ?? '—' }}</td>
+                        <td>{{ document.reference ?? '—' }}</td>
+                        <td>{{ document.folder ?? '—' }}</td>
+                        <td>{{ document.status ?? '—' }}</td>
+                        <td class="text-end">
+                            {{ row.formattedAmount ?? '—' }}
+                        </td>
+                        <td class="text-end">
+                            <twig:TableActions>
+                                <twig:ActionButton
+                                    href="{{ path('app_document_show', { id: document.id }) }}"
+                                    icon="fa-regular fa-file-pdf"
+                                    title="View document"
+                                />
+                                <twig:ActionButton
+                                    href="{{ path('app_document_edit', { id: document.id }) }}"
+                                    icon="fa-regular fa-pen-to-square"
+                                    title="Edit document"
+                                />
+                                <twig:ActionForm
+                                    action="{{ path('app_document_delete', { id: document.id }) }}"
+                                    csrfTokenId="delete-document-{{ document.id }}"
+                                    icon="fa-solid fa-trash"
+                                    title="Delete document"
+                                    confirmMessage="Delete this document?"
+                                />
+                            </twig:TableActions>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </twig:block>
+        </twig:DataTable>
+    </div>
+{% endblock %}

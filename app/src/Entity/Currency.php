@@ -146,6 +146,14 @@ class Currency
         return sprintf('%s - %s', $this->code, $this->name);
     }
 
+    /**
+     * Returns the divisor used to convert between major and minor currency units.
+     */
+    public function getMinorUnitDivisor(): int
+    {
+        return 10 ** $this->decimalPlaces;
+    }
+
     public function __toString(): string
     {
         return $this->getDisplayName();

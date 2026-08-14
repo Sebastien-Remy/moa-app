@@ -1,0 +1,14 @@
+<a
+    href="{{ href }}"
+    class="btn btn-sm {{ variant|default('btn-outline-secondary') }}"
+    title="{{ title }}"
+    aria-label="{{ title }}"
+    {% if target is defined and target %}
+        target="{{ target }}"
+    {% endif %}
+    {% if rel is defined and rel %}
+        rel="{{ rel }}"
+    {% endif %}
+>
+    <i class="{{ icon }}" aria-hidden="true"></i>
+</a>

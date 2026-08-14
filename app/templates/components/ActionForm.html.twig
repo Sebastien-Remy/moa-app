@@ -1,0 +1,23 @@
+<form
+    method="post"
+    action="{{ action }}"
+    class="d-inline"
+>
+    <input
+        type="hidden"
+        name="_token"
+        value="{{ csrf_token(csrfTokenId) }}"
+    >
+
+    <button
+        type="submit"
+        class="btn btn-sm {{ variant|default('btn-outline-danger') }}"
+        title="{{ title }}"
+        aria-label="{{ title }}"
+        {% if confirmMessage is defined and confirmMessage %}
+            onclick="return confirm('{{ confirmMessage|e('js') }}');"
+        {% endif %}
+    >
+        <i class="{{ icon }}" aria-hidden="true"></i>
+    </button>
+</form>

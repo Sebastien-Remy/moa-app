@@ -18,11 +18,11 @@
 
 <div class="d-flex flex-grow-1">
     {% include 'layout/_sidebar.html.twig' %}
-
     <main class="moa-main flex-grow-1">
-
+        <div class="container-fluid pt-3">
+            <twig:FlashMessages />
+        </div>
         {% block body %}{% endblock %}
-
     </main>
 </div>
 

@@ -15,4 +15,12 @@ class CurrencyRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Currency::class);
     }
+
+    public function findDefault(): ?Currency
+    {
+        return $this->findOneBy([
+            'isDefault' => true,
+            'active' => true,
+        ]);
+    }
 }

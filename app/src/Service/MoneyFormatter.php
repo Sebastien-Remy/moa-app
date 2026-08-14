@@ -21,7 +21,7 @@ final readonly class MoneyFormatter
             $currency->getDecimalPlaces(),
         );
 
-        $divisor = 10 ** $currency->getDecimalPlaces();
+        $divisor = $currency->getMinorUnitDivisor();
 
         /** @var string|false $formatted */
         $formatted = $formatter->formatCurrency(

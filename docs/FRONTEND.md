@@ -290,3 +290,163 @@ The shared layout assembles these components.
 Business pages should never duplicate layout elements.
 
 Whenever possible, reusable interface elements should become dedicated Twig partials.
+
+## Component-Oriented Architecture
+
+MOA frontend is built from reusable interface components rather than individual pages.
+
+Pages assemble components.
+
+Components encapsulate presentation.
+
+A page should contain as little presentation logic as possible.
+
+Typical responsibilities include:
+
+- assembling components;
+- passing data to components;
+- defining page-specific content.
+
+Reusable interface elements should become dedicated Twig components.
+
+Examples include:
+
+```text
+_page_header.html.twig
+
+_page_toolbar.html.twig
+
+_data_table.html.twig
+
+_search_bar.html.twig
+
+_filters.html.twig
+
+_statistics.html.twig
+
+_empty_state.html.twig
+```
+
+Whenever a component becomes useful on more than one page, it should be extracted from the page into the shared component library.
+
+The objective is to build a consistent interface where every page is assembled from the same set of reusable building blocks.
+
+## Frontend Philosophy
+
+The frontend architecture follows the same philosophy as the backend.
+
+Repositories retrieve data.
+
+Services implement business rules.
+
+Controllers orchestrate.
+
+Pages assemble components.
+
+Components encapsulate presentation.
+
+Each layer has a single responsibility.
+
+## Prepared View Models
+
+Twig templates should receive data that is already prepared for presentation.
+
+Controllers are responsible for transforming domain objects into presentation data when necessary.
+
+Formatting responsibilities such as:
+
+- monetary values
+- localized dates
+- display labels
+- formatted identifiers
+
+should be prepared before reaching Twig whenever they involve application logic.
+
+Twig should focus on displaying values rather than transforming them.
+
+
+Prefer small composable list components over a single generic list component.
+
+Start with anonymous components. Promote a component to a PHP component only when it requires presentation logic or state preparation.
+
+
+## Component Evolution
+
+Components are introduced when a concrete reuse opportunity has been observed.
+
+Do not create generic components based on assumptions.
+
+Factorize certainties.
+
+Delay abstractions until they become obvious.
+
+A duplicated implementation is often preferable to an abstraction introduced too early.
+
+Components should emerge naturally from repeated usage.
+
+Architecture
+------------
+
+Pages
+Components
+Layouts
+Twig Components
+
+
+Design System
+-------------
+
+Buttons
+
+Tables
+
+Forms
+
+Spacing
+
+Colors
+
+Icons
+
+Typography
+
+
+Rules
+------
+
+HTML is not business logic.
+
+Pages assemble components.
+
+Factorize certainties.
+
+Delay abstractions.
+
+One responsibility per layer.
+
+
+## Icons
+
+MOA uses Font Awesome as its icon library.
+
+The icon identifier stored in the database is the Font Awesome class.
+
+Frontend components must render these identifiers consistently.
+
+Do not mix multiple icon libraries.
+
+## Document import
+
+Document import is one of the core workflows of MOA.
+
+The application should make importing a PDF as quick and accessible as possible.
+
+Current implementation:
+- "Import document" button.
+
+Target implementation:
+- Drag & Drop area.
+- Available from the Documents page.
+- Reusable component for future dashboard and global import.
+- After a successful import, the user is redirected to the document edit page.
+

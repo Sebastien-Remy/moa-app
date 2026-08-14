@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ document.displayName }} | MOA{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        {% set actions %}
+            <a
+                href="{{ path('app_document_edit', { id: document.id }) }}"
+                class="btn btn-primary"
+            >
+                <i class="fa-regular fa-pen-to-square me-1" aria-hidden="true"></i>
+                Edit
+            </a>
+        {% endset %}
+
+        <twig:PageHeader
+            :breadcrumb="[
+                {
+                    label: 'Documents',
+                    href: path('app_document_index')
+                },
+                {
+                    label: document.displayName
+                }
+            ]"
+            title="{{ document.displayName }}"
+            description="Document preview"
+            :actions="actions"
+        />
+
+        <twig:PdfPreview
+            :src="path('app_document_file', { id: document.id })"
+            title="Document preview"
+        />
+    </div>
+{% endblock %}

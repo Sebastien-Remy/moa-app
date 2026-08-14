@@ -34,4 +34,26 @@ class DocumentRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getOneOrNullResult() !== null;
     }
+
+    /**
+     * @return list<Document>
+     */
+    public function findForIndex(): array
+    {
+        return $this->createQueryBuilder('document')
+            ->leftJoin('document.thirdParty', 'thirdParty')
+            ->addSelect('thirdParty')
+            ->leftJoin('document.folder', 'folder')
+            ->addSelect('folder')
+            ->leftJoin('document.documentType', 'documentType')
+            ->addSelect('documentType')
+            ->leftJoin('document.status', 'status')
+            ->addSelect('status')
+            ->leftJoin('document.currency', 'currency')
+            ->addSelect('currency')
+            ->orderBy('document.issuedAt', 'DESC')
+            ->addOrderBy('document.recordedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -8,5 +8,13 @@
                 Home
             </a>
         </li>
+        <li class="nav-item">
+            <a
+                class="nav-link{% if app.request.attributes.get('_route') starts with 'app_document_' %} active{% endif %}"
+                href="{{ path('app_document_index') }}"
+            >
+                Documents
+            </a>
+        </li>
     </ul>
 </nav>
