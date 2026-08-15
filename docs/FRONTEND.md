@@ -1,52 +1,63 @@
 # Frontend
 
-This document describes the frontend architecture and development conventions used throughout MOA.
+This document defines the frontend architecture, conventions and design principles used throughout MOA.
 
-It complements the backend architecture documentation.
+It complements the backend architecture documentation and serves as the reference for every user-facing interface.
 
-The goal is to keep the user interface simple, consistent, maintainable and independent from business logic.
+The objective is to build a frontend that is simple, consistent, maintainable and independent from business logic.
 
 ---
 
-## Philosophy
+# Frontend Philosophy
 
-The frontend of MOA follows a few simple principles.
+The frontend follows a small number of principles that should guide every implementation.
 
 - Simplicity over visual effects.
 - Consistency over creativity.
 - Readability over complexity.
 - Reuse before duplication.
-- Mobile support from the beginning.
 - Accessibility by default.
+- Mobile support from the beginning.
 - Long-term maintainability.
 
-The frontend should feel like a professional business application rather than a marketing website.
+The interface should feel like a professional business application rather than a marketing website.
+
+Whenever possible:
+
+- HTML displays data.
+- Controllers orchestrate.
+- Services implement business rules.
+- Components encapsulate presentation.
+
+Business logic never belongs inside Twig templates.
 
 ---
 
-## Frontend Stack
+# Frontend Stack
 
-MOA uses a lightweight frontend stack.
+MOA intentionally keeps its frontend lightweight.
+
+Current stack:
 
 - Twig
+- Symfony UX Twig Components
+- Bootstrap
+- Font Awesome
 - AssetMapper
 - ImportMap
-- Bootstrap
 - Vanilla JavaScript (ES Modules)
 
 Node.js is intentionally not required.
 
-The objective is to minimize dependencies while keeping a modern frontend architecture.
+The goal is to minimize dependencies while keeping a modern frontend architecture.
 
 ---
 
-## Asset Management
+# Asset Management
 
-MOA uses Symfony AssetMapper as the standard asset pipeline.
+MOA uses Symfony AssetMapper.
 
-Third-party frontend libraries are managed through ImportMap.
-
-Assets are stored under:
+Application assets are stored under:
 
 ```text
 assets/
@@ -58,396 +69,351 @@ Application entry point:
 assets/app.js
 ```
 
-Application styles:
+Global stylesheet:
 
 ```text
-assets/styles/
+assets/app.css
 ```
 
----
-
-## Bootstrap
-
-Bootstrap provides:
-
-- layout
-- grid
-- responsive utilities
-- standard components
-
-Bootstrap is not responsible for the visual identity of MOA.
-
-The application visual identity is implemented through MOA CSS.
+Third-party frontend libraries are managed through ImportMap.
 
 Bootstrap source files must never be modified.
 
 ---
 
-## Separation of Responsibilities
+# Frontend Architecture
 
-One fundamental rule applies throughout the frontend:
+The frontend follows the same architecture philosophy as the backend.
 
-> **HTML is not business logic.**
+```text
+Repositories
+        │
+        ▼
+Services
+        │
+        ▼
+Controllers
+        │
+        ▼
+Pages
+        │
+        ▼
+Components
+```
 
-Responsibilities are clearly separated.
+Responsibilities:
 
-Controllers prepare data.
+| Layer | Responsibility |
+|--------|----------------|
+| Repository | Retrieve data |
+| Service | Business logic |
+| Controller | Orchestrate |
+| Page | Assemble components |
+| Component | Encapsulate presentation |
 
-Services implement business rules.
-
-Twig templates display data.
-
-Reusable presentation belongs in Twig components.
-
-Business decisions must never be implemented inside Twig templates.
+Each layer has one responsibility.
 
 ---
 
-## Layout
+# Layout
 
-Every user-facing page inherits from:
+Every authenticated page inherits from:
 
 ```text
 base.html.twig
 ```
 
-The shared layout provides:
+The application layout is assembled from reusable layout partials.
 
-- header
-- navigation
-- content area
-- footer
+```text
+templates/layout/
 
-The layout should remain as small as possible.
+_header.html.twig
+_sidebar.html.twig
+_navigation.html.twig
+_footer.html.twig
+```
 
-Reusable sections belong in dedicated Twig partials.
+Responsibilities:
+
+| Component | Responsibility |
+|-----------|----------------|
+| Header | Top application bar |
+| Sidebar | Desktop navigation container |
+| Navigation | Navigation links |
+| Footer | Shared footer |
+
+The shared layout should remain as small as possible.
+
+Whenever a section becomes reusable it should be extracted into its own partial.
 
 ---
 
-## Responsive Design
+# Navigation
 
-MOA is designed for:
+MOA uses a single logical navigation.
 
-- desktop
-- tablet
-- mobile
+Desktop:
 
-The primary interface is desktop-oriented.
+- Persistent sidebar
 
-Navigation is implemented as:
+Tablet / Mobile:
 
-- persistent sidebar on desktop
-- offcanvas navigation on tablet and mobile
+- Bootstrap Offcanvas
+
+Navigation links are defined only once:
+
+```text
+templates/layout/_navigation.html.twig
+```
+
+Desktop sidebar and mobile navigation both reuse this partial.
+
+The application navigation is only displayed for authenticated users.
+
+---
+
+# Component-Oriented Architecture
+
+Pages assemble components.
+
+Components encapsulate presentation.
+
+Pages should contain as little presentation logic as possible.
+
+Current reusable components include:
+
+- PageHeader
+- FlashMessages
+- DataTable
+- TableActions
+- ActionButton
+- ActionForm
+- PdfPreview
+- DocumentDropZone
+
+A component should only be introduced after a real reuse opportunity has been observed.
+
+Factorize certainties.
+
+Delay abstractions.
+
+---
+
+# Prepared View Models
+
+Twig templates should receive presentation-ready data.
+
+Controllers prepare presentation data when necessary.
+
+Typical responsibilities include:
+
+- formatted monetary values
+- localized dates
+- display labels
+- formatted identifiers
+
+Twig should display values rather than transform them.
+
+---
+
+# Design System
+
+The frontend should be built from reusable interface building blocks.
+
+Current design system includes:
+
+## Forms
+
+Forms share a common visual language.
+
+Reusable building blocks include:
+
+- form-shell
+- form-card
+- form-actions
+
+Avoid page-specific form CSS whenever shared components or Bootstrap utilities can express the same layout.
+
+## Tables
+
+Document lists use reusable DataTable components.
+
+Tables should remain visually consistent throughout the application.
+
+## Buttons
+
+Bootstrap buttons are used throughout the application.
+
+Prefer Bootstrap utilities over custom button implementations.
+
+## Cards
+
+Cards are used to group related content.
+
+Cards should remain lightweight and consistent.
+
+## Drop Zones
+
+Document import is implemented using a reusable DocumentDropZone component.
+
+Future upload workflows should reuse this component.
+
+## Flash Messages
+
+User notifications are displayed through the shared FlashMessages component.
+
+## Icons
+
+MOA uses Font Awesome.
+
+Only one icon library should be used throughout the application.
+
+Icon identifiers stored in the database are Font Awesome class names.
+
+---
+
+# CSS Organization
+
+CSS is organized by reusable interface concepts rather than pages.
+
+Current structure:
+
+```text
+app.css
+
+Layout
+
+Forms
+
+Tables
+
+Cards
+
+Buttons
+
+Drop Zones
+
+Utilities
+```
+
+Avoid page-specific stylesheets such as:
+
+```text
+login.css
+document.css
+folder.css
+```
+
+The objective is to build reusable interface elements rather than page-specific layouts.
+
+---
+
+# Responsive Design
+
+The application is desktop-first.
+
+Supported devices:
+
+- Desktop
+- Tablet
+- Mobile
+
+Desktop uses a persistent sidebar.
+
+Tablet and mobile use Bootstrap Offcanvas.
 
 The same navigation structure should be reused on every device.
 
 ---
 
-## Components
-
-This section will describe reusable frontend components.
-
-(To be completed during v0.7.)
-
----
-
-## CSS Organization
-
-This section will describe the CSS architecture.
-
-(To be completed during v0.7.)
-
----
-
-## Icons
-
-This section will describe icon conventions.
-
-(To be completed during v0.7.)
-
----
-
-## Accessibility
+# Accessibility
 
 Accessibility is considered part of the frontend architecture.
 
-This section will define the project accessibility rules.
+General rules include:
 
-(To be completed during v0.7.)
+- semantic HTML
+- accessible labels
+- keyboard navigation
+- sufficient color contrast
+- Bootstrap accessibility conventions
+
+Accessibility should never be considered an optional feature.
 
 ---
 
-## Performance
+# Performance
 
 Frontend code should remain lightweight.
 
 General principles include:
 
 - avoid unnecessary JavaScript
-- avoid duplicated markup
 - prefer native browser features
-- reuse Bootstrap utilities before writing custom CSS
+- reuse Bootstrap utilities
+- avoid duplicated HTML
+- avoid unnecessary dependencies
 
 ---
 
-## Design Principles
-
-The frontend follows these design principles.
-
-- Keep templates small.
-- Prefer reusable components.
-- Keep HTML semantic.
-- Keep business logic outside Twig.
-- Prefer Bootstrap utilities before custom CSS.
-- Favor readability over cleverness.
-- Build for maintainability.
-
-## Template Organization
-
-The frontend layout is composed of small reusable Twig partials.
-
-The shared layout is assembled by:
-
-```text
-base.html.twig
-```
-
-Layout components are stored under:
-
-```text
-templates/layout/
-```
-
-Typical examples include:
-
-```text
-_header.html.twig
-_footer.html.twig
-```
-
-The shared layout should remain small.
-
-Whenever a section becomes reusable or grows significantly, it should be extracted into its own Twig partial.
-
-The goal is to keep `base.html.twig` focused on assembling the application layout rather than containing large amounts of HTML.
-
-## Navigation
-
-MOA uses a responsive navigation system.
-
-The navigation has a single logical structure and two visual presentations depending on the available screen size.
-
-Desktop:
-
-- persistent sidebar
-
-Tablet and mobile:
-
-- Bootstrap Offcanvas
-
-Navigation content must be defined only once and reused across both presentations.
-
-Navigation links are implemented in a dedicated Twig partial.
-
-```text
-templates/layout/
-    _navigation.html.twig
-```
-
-The sidebar and the mobile offcanvas include this partial instead of duplicating the navigation markup.
-
-This guarantees that both desktop and mobile navigation always remain consistent.
-
----
-
-## Layout Components
-
-The application layout is built from small reusable Twig partials.
-
-```text
-templates/layout/
-
-_header.html.twig
-
-_navigation.html.twig
-
-_sidebar.html.twig
-
-_footer.html.twig
-```
-
-Each component has a single responsibility.
-
-| Component | Responsibility |
-|-----------|----------------|
-| `_header.html.twig` | Top application bar and mobile navigation trigger |
-| `_navigation.html.twig` | Navigation links |
-| `_sidebar.html.twig` | Desktop navigation container |
-| `_footer.html.twig` | Shared application footer |
-
-The shared layout assembles these components.
-
-Business pages should never duplicate layout elements.
-
-Whenever possible, reusable interface elements should become dedicated Twig partials.
-
-## Component-Oriented Architecture
-
-MOA frontend is built from reusable interface components rather than individual pages.
-
-Pages assemble components.
-
-Components encapsulate presentation.
-
-A page should contain as little presentation logic as possible.
-
-Typical responsibilities include:
-
-- assembling components;
-- passing data to components;
-- defining page-specific content.
-
-Reusable interface elements should become dedicated Twig components.
-
-Examples include:
-
-```text
-_page_header.html.twig
-
-_page_toolbar.html.twig
-
-_data_table.html.twig
-
-_search_bar.html.twig
-
-_filters.html.twig
-
-_statistics.html.twig
-
-_empty_state.html.twig
-```
-
-Whenever a component becomes useful on more than one page, it should be extracted from the page into the shared component library.
-
-The objective is to build a consistent interface where every page is assembled from the same set of reusable building blocks.
-
-## Frontend Philosophy
-
-The frontend architecture follows the same philosophy as the backend.
-
-Repositories retrieve data.
-
-Services implement business rules.
-
-Controllers orchestrate.
-
-Pages assemble components.
-
-Components encapsulate presentation.
-
-Each layer has a single responsibility.
-
-## Prepared View Models
-
-Twig templates should receive data that is already prepared for presentation.
-
-Controllers are responsible for transforming domain objects into presentation data when necessary.
-
-Formatting responsibilities such as:
-
-- monetary values
-- localized dates
-- display labels
-- formatted identifiers
-
-should be prepared before reaching Twig whenever they involve application logic.
-
-Twig should focus on displaying values rather than transforming them.
-
-
-Prefer small composable list components over a single generic list component.
-
-Start with anonymous components. Promote a component to a PHP component only when it requires presentation logic or state preparation.
-
-
-## Component Evolution
-
-Components are introduced when a concrete reuse opportunity has been observed.
-
-Do not create generic components based on assumptions.
-
-Factorize certainties.
-
-Delay abstractions until they become obvious.
-
-A duplicated implementation is often preferable to an abstraction introduced too early.
-
-Components should emerge naturally from repeated usage.
-
-Architecture
-------------
-
-Pages
-Components
-Layouts
-Twig Components
-
-
-Design System
--------------
-
-Buttons
-
-Tables
-
-Forms
-
-Spacing
-
-Colors
-
-Icons
-
-Typography
-
-
-Rules
-------
-
-HTML is not business logic.
-
-Pages assemble components.
-
-Factorize certainties.
-
-Delay abstractions.
-
-One responsibility per layer.
-
-
-## Icons
-
-MOA uses Font Awesome as its icon library.
-
-The icon identifier stored in the database is the Font Awesome class.
-
-Frontend components must render these identifiers consistently.
-
-Do not mix multiple icon libraries.
-
-## Document import
+# Document Import
 
 Document import is one of the core workflows of MOA.
 
-The application should make importing a PDF as quick and accessible as possible.
+The workflow should be as simple as possible.
 
-Current implementation:
-- "Import document" button.
+Current workflow:
 
-Target implementation:
-- Drag & Drop area.
-- Available from the Documents page.
-- Reusable component for future dashboard and global import.
-- After a successful import, the user is redirected to the document edit page.
+```text
+Documents
 
-Forms share a common visual system. Avoid page-specific form CSS unless a concrete layout requirement cannot be expressed with shared classes or Bootstrap utilities.
+↓
+
+Import
+
+↓
+
+Choose or Drop PDF
+
+↓
+
+Create Document
+
+↓
+
+Edit Metadata
+
+↓
+
+Return to Documents
+```
+
+The current implementation provides:
+
+- dedicated import page
+- drag & drop support
+- classic file picker
+- shared storage pipeline
+- automatic document creation
+- automatic document file creation
+- redirection to document editing
+- return to document list after saving
+
+Future improvements should reuse the existing DocumentDropZone component.
+
+---
+
+# General Rules
+
+Always remember:
+
+- HTML is not business logic.
+- Controllers orchestrate.
+- Pages assemble components.
+- Components encapsulate presentation.
+- Factorize certainties.
+- Delay abstractions.
+- Prefer Bootstrap utilities before custom CSS.
+- One responsibility per layer.
+- Build for maintainability.

@@ -1,5 +1,59 @@
 # Releases
 
+# Releases
+
+## v0.7.0 — Front Foundation
+
+Released
+
+### Summary
+
+v0.7 marks the transition from an administration prototype to the first real user-facing version of MOA.
+
+This release establishes the frontend foundations of the application with a shared layout, reusable UI components, a documented design system and the first complete document management workflow outside EasyAdmin.
+
+### Added
+
+- Shared application layout with header, sidebar and footer.
+- Responsive desktop and mobile navigation.
+- Modern login page.
+- User-facing document list.
+- User-facing document details.
+- User-facing document editing.
+- Inline PDF preview.
+- User-facing document import.
+- Drag & Drop document upload.
+- Shared document storage pipeline.
+- Automatic document creation after import.
+- Breadcrumb navigation.
+- Flash message component.
+- Reusable frontend components:
+    - PageHeader
+    - DataTable
+    - TableActions
+    - ActionButton
+    - ActionForm
+    - PdfPreview
+    - DocumentDropZone
+
+### Changed
+
+- Introduced a shared Bootstrap-based frontend design system.
+- Added shared frontend architecture documentation (`FRONTEND.md`).
+- Harmonized application forms.
+- Authentication-aware application layout.
+- Improved navigation between MOA and EasyAdmin.
+- `Document::issuedAt` is now optional.
+- Document storage pipeline is now shared between EasyAdmin and the frontend.
+
+### Result
+
+The main document workflow is now fully accessible through the MOA frontend.
+
+EasyAdmin remains available as the administration backend while progressively being replaced by dedicated user-facing interfaces.
+
+---
+
 # v0.6.0
 
 ## Overview
