@@ -1,20 +1,49 @@
 <nav aria-label="Main navigation">
-    <ul class="nav nav-pills flex-column gap-1">
-        <li class="nav-item">
-            <a
-                class="nav-link{% if app.request.attributes.get('_route') == 'app_home' %} active{% endif %}"
-                href="{{ path('app_home') }}"
-            >
-                Home
-            </a>
-        </li>
-        <li class="nav-item">
-            <a
-                class="nav-link{% if app.request.attributes.get('_route') starts with 'app_document_' %} active{% endif %}"
-                href="{{ path('app_document_index') }}"
-            >
-                Documents
-            </a>
-        </li>
-    </ul>
+
+    <div class="mb-4">
+        <div class="text-uppercase small text-body-secondary fw-semibold mb-2">
+            Workspace
+        </div>
+
+        <ul class="nav nav-pills flex-column gap-1">
+            <li class="nav-item">
+                <a
+                    class="nav-link{% if app.request.attributes.get('_route') == 'app_home' %} active{% endif %}"
+                    href="{{ path('app_home') }}"
+                >
+                    <i class="fa-solid fa-house me-2"></i>
+                    Home
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a
+                    class="nav-link{% if app.request.attributes.get('_route') starts with 'app_document_' %} active{% endif %}"
+                    href="{{ path('app_document_index') }}"
+                >
+                    <i class="fa-regular fa-file-lines me-2"></i>
+                    Documents
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="border-top pt-3">
+        <div class="text-uppercase small text-body-secondary fw-semibold mb-2">
+            Administration
+        </div>
+
+        <ul class="nav nav-pills flex-column gap-1">
+            <li class="nav-item">
+                <a
+                    class="nav-link"
+                    href="{{ path('admin') }}"
+                >
+                    <i class="fa-solid fa-screwdriver-wrench me-2"></i>
+                    Admin
+                </a>
+            </li>
+        </ul>
+    </div>
+
 </nav>

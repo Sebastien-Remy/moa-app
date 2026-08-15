@@ -144,6 +144,12 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::section('Administration');
 
+        yield MenuItem::linkToRoute(
+            'Back to MOA',
+            'fa-solid fa-arrow-left',
+            'app_home',
+        );
+
         yield MenuItem::linkTo(
             UserCrudController::class,
             'Users',
