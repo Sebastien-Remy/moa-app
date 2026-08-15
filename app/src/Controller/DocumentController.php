@@ -126,10 +126,7 @@ final class DocumentController extends BaseController
                 );
 
                 return $this->redirectToRoute(
-                    'app_document_show',
-                    [
-                        'id' => (string) $document->getId(),
-                    ],
+                    'app_document_index',
                 );
             }
         }

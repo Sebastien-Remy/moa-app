@@ -1,0 +1,41 @@
+<div
+    class="document-dropzone"
+    data-document-dropzone
+>
+    <div class="document-dropzone__icon" aria-hidden="true">
+        <i class="fa-solid fa-file-arrow-up"></i>
+    </div>
+
+    <div class="document-dropzone__title">
+        Drag & drop a PDF document here
+    </div>
+
+    <div class="document-dropzone__separator">
+        or
+    </div>
+
+    <label
+        for="{{ field.vars.id }}"
+        class="btn btn-outline-primary"
+    >
+        Choose a PDF document
+    </label>
+
+    <div
+        class="document-dropzone__filename"
+        data-document-dropzone-filename
+    >
+        PDF files only.
+    </div>
+
+    <div class="document-dropzone__input">
+        {{ form_widget(field, {
+            attr: {
+                'data-document-dropzone-input': '',
+                'accept': 'application/pdf'
+            }
+        }) }}
+    </div>
+
+    {{ form_errors(field) }}
+</div>

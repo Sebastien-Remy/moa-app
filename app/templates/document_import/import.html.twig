@@ -27,7 +27,11 @@
 
                         {{ form_start(form) }}
 
-                        {{ form_row(form.uploadedFile) }}
+                        <twig:DocumentDropZone
+
+                            :field="form.uploadedFile"
+
+                        />
 
                         <div class="d-flex justify-content-end gap-2 mt-4">
 
