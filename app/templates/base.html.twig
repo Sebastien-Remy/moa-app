@@ -13,15 +13,22 @@
         {% block importmap %}{{ importmap('app') }}{% endblock %}
     {% endblock %}
 </head>
+
 <body class="d-flex flex-column min-vh-100">
-{% include 'layout/_header.html.twig' %}
+{% if app.user %}
+    {% include 'layout/_header.html.twig' %}
+{% endif %}
 
 <div class="d-flex flex-grow-1">
-    {% include 'layout/_sidebar.html.twig' %}
+    {% if app.user %}
+        {% include 'layout/_sidebar.html.twig' %}
+    {% endif %}
+
     <main class="moa-main flex-grow-1">
         <div class="container-fluid pt-3">
             <twig:FlashMessages />
         </div>
+
         {% block body %}{% endblock %}
     </main>
 </div>
