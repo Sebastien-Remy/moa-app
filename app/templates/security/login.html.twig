@@ -3,52 +3,100 @@
 {% block title %}Login | MOA{% endblock %}
 
 {% block body %}
-    <main>
-        <h1>Sign in to MOA</h1>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4">
+                <div class="form-shell mx-auto">
+                    <div class="text-center mb-4">
+                        <h1 class="h3 mb-2">MOA</h1>
 
-        {% if error %}
-            <p>{{ error.messageKey|trans(error.messageData, 'security') }}</p>
-        {% endif %}
+                        <p class="text-body-secondary mb-0">
+                            My Office Assistant
+                        </p>
+                    </div>
 
-        {% if app.user %}
-            <p>
-                You are already signed in as {{ app.user.userIdentifier }}.
-                <a href="{{ path('app_logout') }}">Logout</a>
-            </p>
-        {% else %}
-            <form method="post">
-                <div>
-                    <label for="username">Username</label>
-                    <input
-                        type="text"
-                        id="username"
-                        name="_username"
-                        value="{{ last_username }}"
-                        autocomplete="username"
-                        required
-                        autofocus
-                    >
+                    <div class="form-card">
+                        <h2 class="h5 mb-4">
+                            Sign in
+                        </h2>
+
+                        {% if error %}
+                            <div class="alert alert-danger" role="alert">
+                                {{ error.messageKey|trans(error.messageData, 'security') }}
+                            </div>
+                        {% endif %}
+
+                        {% if app.user %}
+                            <div class="alert alert-info mb-0" role="alert">
+                                You are already signed in as
+                                <strong>{{ app.user.userIdentifier }}</strong>.
+
+                                <a
+                                    href="{{ path('app_logout') }}"
+                                    class="alert-link"
+                                >
+                                    Logout
+                                </a>
+                            </div>
+                        {% else %}
+                            <form method="post">
+                                <div class="mb-3">
+                                    <label
+                                        for="username"
+                                        class="form-label"
+                                    >
+                                        Username
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        id="username"
+                                        name="_username"
+                                        value="{{ last_username }}"
+                                        class="form-control"
+                                        autocomplete="username"
+                                        required
+                                        autofocus
+                                    >
+                                </div>
+
+                                <div class="mb-3">
+                                    <label
+                                        for="password"
+                                        class="form-label"
+                                    >
+                                        Password
+                                    </label>
+
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        name="_password"
+                                        class="form-control"
+                                        autocomplete="current-password"
+                                        required
+                                    >
+                                </div>
+
+                                <input
+                                    type="hidden"
+                                    name="_csrf_token"
+                                    value="{{ csrf_token('authenticate') }}"
+                                >
+
+                                <div class="form-actions">
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary w-100"
+                                    >
+                                        Sign in
+                                    </button>
+                                </div>
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
-
-                <div>
-                    <label for="password">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="_password"
-                        autocomplete="current-password"
-                        required
-                    >
-                </div>
-
-                <input
-                    type="hidden"
-                    name="_csrf_token"
-                    value="{{ csrf_token('authenticate') }}"
-                >
-
-                <button type="submit">Sign in</button>
-            </form>
-        {% endif %}
-    </main>
+            </div>
+        </div>
+    </div>
 {% endblock %}

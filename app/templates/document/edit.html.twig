@@ -7,7 +7,7 @@
         <twig:PageHeader
             :breadcrumb="[
                 {
-                  label: 'Documents',
+                    label: 'Documents',
                     href: path('app_document_index')
                 },
                 {
@@ -23,31 +23,83 @@
         />
 
         <div class="row g-4">
-            <div class="col-12 col-xl-7">
-                {{ form_start(form) }}
+            <div class="col-12 col-xl-5">
+                <div class="form-shell">
+                    <div class="form-card">
+                        {{ form_start(form) }}
 
-                {{ form_widget(form) }}
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                {{ form_row(form.issuedAt) }}
+                            </div>
 
-                <div class="d-flex gap-2 mt-4">
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                    >
-                        Save
-                    </button>
+                            <div class="col-12 col-md-6">
+                                {{ form_row(form.direction) }}
+                            </div>
 
-                    <a
-                        href="{{ path('app_document_show', { id: document.id }) }}"
-                        class="btn btn-outline-secondary"
-                    >
-                        Cancel
-                    </a>
+                            <div class="col-12">
+                                {{ form_row(form.reference) }}
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                {{ form_row(form.thirdParty) }}
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                {{ form_row(form.folder) }}
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                {{ form_row(form.documentType) }}
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                {{ form_row(form.status) }}
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                {{ form_row(form.totalAmount) }}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form_row(form.tags) }}
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                {{ form_row(form.validFrom) }}
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                {{ form_row(form.validUntil) }}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form_row(form.notes) }}
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <a
+                                href="{{ path('app_document_index') }}"
+                                class="btn btn-outline-secondary"
+                            >
+                                Cancel
+                            </a>
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                            >
+                                Save
+                            </button>
+                        </div>
+
+                        {{ form_end(form) }}
+                    </div>
                 </div>
-
-                {{ form_end(form) }}
             </div>
 
-            <div class="col-12 col-xl-5">
+            <div class="col-12 col-xl-7">
                 <twig:PdfPreview
                     :src="path('app_document_file', { id: document.id })"
                     title="Document preview"

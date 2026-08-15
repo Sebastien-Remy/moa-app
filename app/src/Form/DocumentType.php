@@ -75,6 +75,7 @@ final class DocumentType extends AbstractType
             ->add('tags', EntityType::class, [
                 'class' => Tag::class,
                 'multiple' => true,
+                'expanded' => true,
                 'required' => false,
             ])
             ->add('validFrom', DateType::class, [

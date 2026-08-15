@@ -450,3 +450,4 @@ Target implementation:
 - Reusable component for future dashboard and global import.
 - After a successful import, the user is redirected to the document edit page.
 
+Forms share a common visual system. Avoid page-specific form CSS unless a concrete layout requirement cannot be expressed with shared classes or Bootstrap utilities.
