@@ -529,6 +529,51 @@ User-facing and conceptual documentation is maintained in the GitHub Wiki.
 
 ---
 
+## Workspace Isolation
+
+MOA is designed to support both self-hosted deployments and future SaaS deployments.
+
+Every business entity belongs to exactly one `Workspace`.
+
+The Workspace is the primary security boundary of the application.
+
+Typical business entities include:
+
+- Users
+- Documents
+- Document Files
+- Folders
+- Tags
+- Categories
+- Projects
+- Third Parties
+- Bank Accounts
+- Bank Transactions
+- Analysis
+- Settlement Entries
+
+A self-hosted installation contains a single default Workspace.
+
+Future SaaS deployments will create one Workspace per customer.
+
+Examples:
+
+```text
+demo.moa-app.fr
+gorilladev.moa-app.fr
+mycompany.moa-app.fr
+```
+
+Repositories and application services should always operate inside the current Workspace.
+
+Workspace filtering must not be implemented manually inside controllers or Twig templates.
+
+The current Workspace should be resolved once during the request lifecycle and automatically applied throughout the application.
+
+This architectural rule exists to guarantee strong tenant isolation while keeping the self-hosted version identical to the SaaS codebase.
+
+---
+
 ## Design Principles
 
 The technical architecture follows a few simple principles.
