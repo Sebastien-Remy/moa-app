@@ -1,5 +1,301 @@
+# Architecture Roadmap
+
+## Multi-Workspace Foundation
+
+**Status:** Planned
+
+### Goal
+
+Prepare MOA for a future SaaS offering while keeping self-hosted installations simple.
+
+The objective is to establish a clear security boundary between organizations from the beginning, without implementing the complete SaaS platform yet.
+
+---
+
+### Principles
+
+Every business entity belongs to exactly one `Workspace`.
+
+The Workspace is the security boundary of the application.
+
+Business data must never exist outside a Workspace.
+
+Self-hosted installations will contain a single default Workspace.
+
+Future SaaS deployments will create one Workspace per customer.
+
+Examples:
+
+- `demo.moa-app.fr`
+- `gorilladev.moa-app.fr`
+- `mycompany.moa-app.fr`
+
+---
+
+### Initial Scope
+
+Introduce a new root entity:
+
+- `Workspace`
+
+Every business entity will eventually belong to a Workspace, including:
+
+- Users
+- Documents
+- Folders
+- Tags
+- Categories
+- Projects
+- Third Parties
+- Bank Accounts
+- Analysis
+- Settlement Entries
+
+The Workspace context should be resolved once during the request lifecycle and automatically applied by repositories and services.
+
+Controllers and Twig templates should never be responsible for filtering data by Workspace.
+
+---
+
+### Non Goals
+
+This milestone does **not** implement:
+
+- SaaS subscriptions;
+- customer billing;
+- workspace creation UI;
+- subdomain provisioning;
+- multi-company management;
+- workspace switching.
+
+Those features belong to future releases.
+
+---
+
+### Completion Criteria
+
+This architectural milestone can be considered complete when:
+
+- A `Workspace` entity exists.
+- Existing data belongs to a Workspace.
+- The Workspace is resolved automatically for every request.
+- Repository queries are Workspace-aware.
+- A self-hosted installation continues to behave exactly as before using a single default Workspace.
+- 
 # Roadmap
-# v0.8 — Document Analysis & Browsing
+# v0.8 — Third Party Settlement Engine
+
+**Status:** Planning
+
+## Goal
+
+Introduce the settlement engine that connects documents, third parties and bank transactions.
+
+This version establishes the financial workflow that allows MOA to answer one fundamental question:
+
+> **Who owes money to whom?**
+
+Documents generate receivables or payables for one or more third parties.
+
+Bank transactions settle these receivables and payables.
+
+This version introduces the settlement domain without implementing a full double-entry accounting system.
+
+---
+
+## Scope
+
+### Third Party Settlement
+
+Introduce a new settlement layer independent from document analysis.
+
+Create a new entity:
+
+- `ThirdPartyEntry`
+
+Each entry represents a receivable or payable towards a single third party.
+
+A settlement entry may originate from:
+
+- a document;
+- a bank transaction.
+
+A settlement entry must never originate from both simultaneously.
+
+---
+
+### Multiple Third Parties per Document
+
+A single document may generate multiple receivables or payables.
+
+This makes it possible to model documents such as:
+
+- payroll summaries;
+- expense reports;
+- tax declarations;
+- grouped invoices.
+
+Examples:
+
+```text
+Payroll Summary
+
+→ Employee A
+→ Employee B
+→ URSSAF
+→ Audiens
+→ AFDAS
+→ Tax Administration
+```
+
+```text
+Expense Report
+
+Restaurant receipt
+→ Employee
+
+Taxi receipt
+→ Employee
+
+Hotel invoice
+→ Employee
+```
+
+```text
+Supplier Invoice
+
+Supplier invoice
+→ Supplier
+```
+
+The document remains a single business document while settlement is performed independently for every concerned third party.
+
+---
+
+### Third Party Balance
+
+The balance of every third party is calculated from settlement entries.
+
+Examples:
+
+```text
+Supplier
+
+Invoice      -500 €
+Payment      +500 €
+
+Balance         0 €
+```
+
+```text
+Employee
+
+Expense claim   -200 €
+Reimbursement   +200 €
+
+Balance           0 €
+```
+
+Future versions may expose these balances through dedicated dashboards and reports.
+
+---
+
+### Settlement from Bank Transactions
+
+Bank transactions also create settlement entries.
+
+This allows settlement to become independent from analytical allocation.
+
+A payment may settle:
+
+- one document;
+- multiple documents;
+- part of a document;
+- multiple third parties.
+
+The existing `DocumentTransaction` reconciliation mechanism remains available.
+
+Settlement and document reconciliation represent two different business concepts.
+
+---
+
+### Relationship with Analysis
+
+Analysis answers:
+
+> **Where does the money belong?**
+
+Settlement answers:
+
+> **Who should receive or pay the money?**
+
+These two domains remain completely independent.
+
+Examples:
+
+```text
+Supplier Invoice
+
+Settlement
+→ Supplier
+
+Analysis
+→ Purchases
+→ Project MOA
+```
+
+```text
+Expense Receipt
+
+Settlement
+→ Employee
+
+Analysis
+→ Travel
+→ Client Project
+```
+
+---
+
+## Architecture
+
+Introduce the settlement domain without transforming MOA into a complete accounting application.
+
+Reuse the existing `ThirdParty` entity.
+
+Avoid introducing accounting journals, debit/credit entries or general ledger accounts.
+
+The settlement layer must remain lightweight while supporting:
+
+- supplier invoices;
+- customer invoices;
+- expense reports;
+- payroll summaries;
+- tax and social declarations;
+- partial payments;
+- grouped payments.
+
+Business rules belong in dedicated services rather than controllers or Twig templates.
+
+---
+
+## Completion Criteria
+
+v0.8 can be considered complete when:
+
+- `ThirdPartyEntry` has been implemented.
+- A document can generate multiple settlement entries.
+- A bank transaction can generate settlement entries.
+- Third party balances can be calculated.
+- Settlement and document reconciliation remain independent.
+- Existing `DocumentTransaction` reconciliation continues to work.
+- Analysis continues to work independently from settlement.
+- Existing document workflows remain compatible.
+- EasyAdmin supports the new settlement entities.
+
+---
+
+# v0.9 — Document Analysis & Browsing
 
 **Status:** Planning
 
