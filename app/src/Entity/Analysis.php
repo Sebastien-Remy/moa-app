@@ -18,6 +18,10 @@ class Analysis
     #[ORM\Column(type: 'ulid', unique: true)]
     private ?Ulid $id = null;
 
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[Assert\NotNull]
+    private ?\DateTimeImmutable $analysisDate = null;
+
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
     private ?Document $document = null;
@@ -34,12 +38,28 @@ class Analysis
     #[Assert\NotNull]
     private ?int $amount = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
+    private ?Currency $currency = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
     public function getId(): ?Ulid
     {
         return $this->id;
+    }
+
+    public function getAnalysisDate(): ?\DateTimeImmutable
+    {
+        return $this->analysisDate;
+    }
+
+    public function setAnalysisDate(\DateTimeImmutable $analysisDate): static
+    {
+        $this->analysisDate = $analysisDate;
+
+        return $this;
     }
 
     public function getDocument(): ?Document
@@ -83,6 +103,17 @@ class Analysis
         return $this->amount;
     }
 
+    public function getCurrency(): ?Currency
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(Currency $currency): static
+    {
+        $this->currency = $currency;
+        return $this;
+    }
+
     public function setAmount(int $amount): static
     {
         $this->amount = $amount;
@@ -106,6 +137,10 @@ class Analysis
     public function getDisplayName(): string
     {
         $parts = [];
+
+        if ($this->analysisDate !== null) {
+            $parts[] = $this->analysisDate->format('Y-m-d');
+        }
 
         if ($this->document !== null) {
             $parts[] = $this->document->getDisplayName();

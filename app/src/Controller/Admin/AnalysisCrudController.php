@@ -4,19 +4,23 @@ namespace App\Controller\Admin;
 
 use App\Entity\Analysis;
 use App\Service\AnalysisService;
+use App\Service\MoneyFormatter;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 
 final class AnalysisCrudController extends BaseCrudController
 {
     public function __construct(
         private readonly AnalysisService $analysisService,
+        private readonly MoneyFormatter $moneyFormatter,
     ) {
     }
 
@@ -51,6 +55,8 @@ final class AnalysisCrudController extends BaseCrudController
         yield IdField::new('id')
             ->onlyOnDetail();
 
+        yield DateField::new('analysisDate', 'Date');
+
         yield AssociationField::new('document', 'Document');
 
         yield AssociationField::new(
@@ -60,7 +66,18 @@ final class AnalysisCrudController extends BaseCrudController
 
         yield AssociationField::new('category', 'Category');
 
-        yield IntegerField::new('amount', 'Amount');
+        yield MoneyField::new('amount', 'Amount')
+            ->setCurrencyPropertyPath('currency.code')
+            ->setStoredAsCents()
+            ->onlyOnIndex();
+
+        yield MoneyField::new('amount', 'Amount')
+            ->setCurrencyPropertyPath('currency.code')
+            ->setStoredAsCents()
+            ->onlyOnForms();
+
+        yield AssociationField::new('currency', 'Currency')
+            ->onlyOnForms();
 
         yield TextareaField::new('notes', 'Notes');
     }
