@@ -1,3 +1,236 @@
+# v0.8 — Financial Analysis Workflow
+
+**Status:** Planning
+
+## Goal
+
+Make MOA genuinely usable for everyday business document management by introducing the first complete financial analysis workflow.
+
+This version focuses on qualifying documents rather than accounting for them.
+
+Each document should answer three fundamental questions:
+
+- **Who** does this document concern? (`ThirdParty`)
+- **What** does the money correspond to? (`Category`)
+- **Where** should the money be allocated? (`Analysis Dimension Values`)
+
+The objective is to provide meaningful financial reporting without introducing the complexity of a complete accounting system or bank reconciliation.
+
+---
+
+## Scope
+
+### Financial Analysis
+
+Build upon the existing `Analysis` entity instead of introducing a new financial model.
+
+Each analysis entry represents an allocation of part (or all) of a document amount.
+
+An analysis entry contains:
+
+- accounting date (analysis date)
+- category
+- one or more analysis dimension values
+- signed amount
+- optional notes
+
+The analysis date is independent from the document issue date.
+
+This allows a single document to allocate amounts across multiple accounting periods.
+
+Example:
+
+```text
+Train tickets invoice
+
+August travel     120 €
+September travel  180 €
+```
+
+---
+
+### Third Party Position
+
+Reuse the existing `ThirdParty` entity.
+
+Each document remains linked to a single third party.
+
+The financial position of a third party is calculated from document analyses.
+
+The associated date allows future reporting by accounting period.
+
+Examples:
+
+```text
+EDF
+
+Invoice
+15/08/2026
+450 €
+```
+
+```text
+Employee
+
+Expense report
+31/08/2026
+220 €
+```
+
+Bank settlement is intentionally excluded from this version.
+
+---
+
+### Document Analysis Workflow
+
+Extend the existing document edit screen with a dedicated analysis section.
+
+Users should be able to:
+
+- view existing analysis entries;
+- add an analysis entry;
+- edit an analysis entry;
+- remove an analysis entry;
+- immediately see:
+    - document amount;
+    - allocated amount;
+    - remaining amount.
+
+The workflow should remain simple and optimized for everyday document processing.
+
+---
+
+### Document Browsing
+
+Improve the document list for daily use.
+
+Introduce:
+
+- pagination;
+- search;
+- first useful filters;
+- persistent search and filters across pages;
+- number of matching documents;
+- cumulative amount of displayed results.
+
+The footer should display aggregated monetary totals for the current result set.
+
+---
+
+### Category Summary
+
+Introduce the first analytical dashboard for categories.
+
+Display, for each category:
+
+- allocated amount;
+- number of documents.
+
+Example:
+
+```text
+Hosting                 520 €
+Travel                1 240 €
+Payroll              25 600 €
+Software               890 €
+```
+
+No drill-down is required for this version.
+
+---
+
+### Analysis Dimension Summary
+
+Introduce summary pages for each analysis dimension.
+
+Display the cumulative amount allocated to every dimension value.
+
+Examples:
+
+```text
+Project
+
+MOA                 4 200 €
+Internal              980 €
+Client A            8 150 €
+```
+
+The implementation should automatically support every analysis dimension without requiring dedicated code for each one.
+
+---
+
+### Third Party Summary
+
+Introduce a summary page listing all third parties.
+
+Display:
+
+- cumulative amount;
+- number of related documents.
+
+Example:
+
+```text
+EDF                1 250 €
+Amazon               890 €
+URSSAF            12 450 €
+```
+
+This page represents the first step toward future payable and receivable management.
+
+---
+
+## Architecture
+
+Reuse the existing financial domain as much as possible.
+
+No new accounting engine should be introduced.
+
+Continue relying on:
+
+- `Document`
+- `Analysis`
+- `Category`
+- `AnalysisDimension`
+- `AnalysisDimensionValue`
+- `ThirdParty`
+
+Business rules belong in services rather than controllers or Twig templates.
+
+Repository queries should provide aggregated totals directly instead of calculating them in Twig.
+
+This version deliberately avoids introducing:
+
+- double-entry accounting;
+- chart of accounts;
+- journals;
+- debit / credit entries;
+- bank reconciliation;
+- payment tracking.
+
+These features belong to future releases.
+
+---
+
+## Completion Criteria
+
+v0.8 can be considered complete when:
+
+- analysis entries support their own accounting date;
+- a document can be allocated across multiple analysis entries;
+- allocated and remaining amounts are clearly visible;
+- document editing provides a complete financial analysis workflow;
+- the document list supports pagination, search and filtering;
+- cumulative totals are displayed in the document list;
+- category summary pages display aggregated amounts;
+- analysis dimension summary pages display aggregated amounts;
+- third party summary pages display aggregated amounts;
+- existing document import and viewing workflows remain fully compatible;
+- EasyAdmin remains compatible with the updated domain model.
+
+
+---
+
 # Architecture Roadmap
 
 ## Multi-Workspace Foundation
@@ -81,9 +314,11 @@ This architectural milestone can be considered complete when:
 - The Workspace is resolved automatically for every request.
 - Repository queries are Workspace-aware.
 - A self-hosted installation continues to behave exactly as before using a single default Workspace.
-- 
+
+---
+
 # Roadmap
-# v0.8 — Third Party Settlement Engine
+# v0.9 — Third Party Settlement Engine
 
 **Status:** Planning
 
