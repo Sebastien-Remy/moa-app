@@ -22,7 +22,7 @@ class Analysis
     #[Assert\NotNull]
     private ?\DateTimeImmutable $analysisDate = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'analyses')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
     private ?Document $document = null;
 

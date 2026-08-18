@@ -96,6 +96,7 @@ final class DocumentController extends BaseController
         Request $request,
         CurrencyRepository $currencyRepository,
         DocumentService $documentService,
+        MoneyFormatter $moneyFormatter,
     ): Response {
         $currency = $document->getCurrency()
             ?? $currencyRepository->findDefault();
@@ -131,9 +132,31 @@ final class DocumentController extends BaseController
             }
         }
 
+        $analysisRows = [];
+
+        foreach ($document->getAnalyses() as $analysis) {
+            $formattedAmount = null;
+
+            if (
+                $analysis->getAmount() !== null
+                && $analysis->getCurrency() !== null
+            ) {
+                $formattedAmount = $moneyFormatter->format(
+                    $analysis->getAmount(),
+                    $analysis->getCurrency(),
+                );
+            }
+
+            $analysisRows[] = [
+                'analysis' => $analysis,
+                'formattedAmount' => $formattedAmount,
+            ];
+        }
+
         return $this->render('document/edit.html.twig', [
             'document' => $document,
             'form' => $form,
+            'analysisRows' => $analysisRows,
         ]);
     }
 

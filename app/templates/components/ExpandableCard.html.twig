@@ -1,0 +1,49 @@
+{% props
+    id,
+    title,
+    description = null,
+    expanded = true,
+%}
+
+<div class="form-card">
+    <div class="d-flex justify-content-between align-items-start gap-3">
+        <button
+            type="button"
+            class="expandable-card-header flex-grow-1 border-0 bg-transparent p-0 text-start"
+            data-bs-toggle="collapse"
+            data-bs-target="#{{ id }}"
+            aria-expanded="{{ expanded ? 'true' : 'false' }}"
+            aria-controls="{{ id }}"
+        >
+            <div class="d-flex justify-content-between align-items-center gap-3">
+                <div class="flex-grow-1">
+                    <h2 class="h5 mb-1">
+                        {{ title }}
+                    </h2>
+
+                    {% if description %}
+                        <p class="text-body-secondary mb-0">
+                            {{ description }}
+                        </p>
+                    {% endif %}
+                </div>
+
+                <i
+                    class="fa-solid fa-chevron-down expandable-card-chevron"
+                    aria-hidden="true"
+                ></i>
+            </div>
+        </button>
+
+        {% block actions %}{% endblock %}
+    </div>
+
+    <div
+        id="{{ id }}"
+        class="collapse{% if expanded %} show{% endif %}"
+    >
+        <div class="pt-4">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>

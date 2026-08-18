@@ -88,11 +88,21 @@ class Document
     )]
     private Collection $documentFiles;
 
+    /**
+     * @var Collection<int, Analysis>
+     */
+    #[ORM\OneToMany(
+        mappedBy: 'document',
+        targetEntity: Analysis::class,
+    )]
+    private Collection $analyses;
+
     public function __construct()
     {
+        $this->recordedAt = new \DateTimeImmutable();
         $this->tags = new ArrayCollection();
         $this->documentFiles = new ArrayCollection();
-        $this->recordedAt = new \DateTimeImmutable();
+        $this->analyses = new ArrayCollection();
     }
 
     public function getId(): ?Ulid
@@ -314,6 +324,35 @@ class Document
     public function removeDocumentFile(DocumentFile $documentFile): static
     {
         $this->documentFiles->removeElement($documentFile);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Analysis>
+     */
+    public function getAnalyses(): Collection
+    {
+        return $this->analyses;
+    }
+
+    public function addAnalysis(Analysis $analysis): static
+    {
+        if (!$this->analyses->contains($analysis)) {
+            $this->analyses->add($analysis);
+            $analysis->setDocument($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAnalysis(Analysis $analysis): static
+    {
+        if ($this->analyses->removeElement($analysis)) {
+            if ($analysis->getDocument() === $this) {
+                $analysis->setDocument(null);
+            }
+        }
 
         return $this;
     }

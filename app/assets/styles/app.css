@@ -112,3 +112,15 @@ main {
     gap: .75rem;
     margin-top: 2rem;
 }
+
+.expandable-card-header {
+    cursor: pointer;
+}
+
+.expandable-card-chevron {
+    transition: transform .2s ease;
+}
+
+.expandable-card-header.collapsed .expandable-card-chevron {
+    transform: rotate(-90deg);
+}

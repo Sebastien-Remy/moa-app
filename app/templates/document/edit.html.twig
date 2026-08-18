@@ -25,77 +25,126 @@
         <div class="row g-4">
             <div class="col-12 col-xl-5">
                 <div class="form-shell">
-                    <div class="form-card">
-                        {{ form_start(form) }}
+                    <twig:ExpandableCard
+                        id="document-information"
+                        title="Document information"
+                        description="Edit document metadata and classification."
+                        :expanded="true"
+                    >
+                        <twig:block name="content">
+                            {{ form_start(form) }}
 
-                        <div class="row g-3">
-                            <div class="col-12 col-md-6">
-                                {{ form_row(form.issuedAt) }}
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    {{ form_row(form.issuedAt) }}
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    {{ form_row(form.direction) }}
+                                </div>
+
+                                <div class="col-12">
+                                    {{ form_row(form.reference) }}
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    {{ form_row(form.thirdParty) }}
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    {{ form_row(form.folder) }}
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    {{ form_row(form.documentType) }}
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    {{ form_row(form.status) }}
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    {{ form_row(form.totalAmount) }}
+                                </div>
+
+                                <div class="col-12">
+                                    {{ form_row(form.tags) }}
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    {{ form_row(form.validFrom) }}
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    {{ form_row(form.validUntil) }}
+                                </div>
+
+                                <div class="col-12">
+                                    {{ form_row(form.notes) }}
+                                </div>
                             </div>
 
-                            <div class="col-12 col-md-6">
-                                {{ form_row(form.direction) }}
+                            <div class="form-actions">
+                                <a
+                                    href="{{ path('app_document_index') }}"
+                                    class="btn btn-outline-secondary"
+                                >
+                                    Cancel
+                                </a>
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
+                                >
+                                    Save
+                                </button>
                             </div>
 
-                            <div class="col-12">
-                                {{ form_row(form.reference) }}
-                            </div>
+                            {{ form_end(form) }}
+                        </twig:block>
+                    </twig:ExpandableCard>
 
-                            <div class="col-12 col-md-6">
-                                {{ form_row(form.thirdParty) }}
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                {{ form_row(form.folder) }}
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                {{ form_row(form.documentType) }}
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                {{ form_row(form.status) }}
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                {{ form_row(form.totalAmount) }}
-                            </div>
-
-                            <div class="col-12">
-                                {{ form_row(form.tags) }}
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                {{ form_row(form.validFrom) }}
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                {{ form_row(form.validUntil) }}
-                            </div>
-
-                            <div class="col-12">
-                                {{ form_row(form.notes) }}
-                            </div>
-                        </div>
-
-                        <div class="form-actions">
-                            <a
-                                href="{{ path('app_document_index') }}"
-                                class="btn btn-outline-secondary"
+                    <twig:ExpandableCard
+                        id="financial-analysis"
+                        title="Financial analysis"
+                        description="Allocate this document to categories and analytical dimensions."
+                        :expanded="true"
+                    >
+                        <twig:block name="content">
+                            <twig:DataTable
+                                :rows="analysisRows"
+                                emptyMessage="No analysis entries yet."
                             >
-                                Cancel
-                            </a>
+                                <twig:block name="header">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Category</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </twig:block>
 
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                            >
-                                Save
-                            </button>
-                        </div>
+                                <twig:block name="body">
+                                    {% for row in analysisRows %}
+                                        {% set analysis = row.analysis %}
 
-                        {{ form_end(form) }}
-                    </div>
+                                        <tr>
+                                            <td>
+                                                {{ analysis.analysisDate|date('d/m/Y') }}
+                                            </td>
+
+                                            <td>
+                                                {{ analysis.category ? analysis.category.displayName : '—' }}
+                                            </td>
+
+                                            <td class="text-end">
+                                                {{ row.formattedAmount ?? '—' }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </twig:block>
+                            </twig:DataTable>
+                        </twig:block>
+                    </twig:ExpandableCard>
                 </div>
             </div>
 
