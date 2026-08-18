@@ -110,6 +110,15 @@
                         description="Allocate this document to categories and analytical dimensions."
                         :expanded="true"
                     >
+                        <twig:block name="actions">
+                            <a
+                                href="{{ path('app_document_analysis_new', { id: document.id }) }}"
+                                class="btn btn-sm btn-primary"
+                            >
+                                <i class="fa-solid fa-plus me-1"></i>
+                                Add analysis
+                            </a>
+                        </twig:block>
                         <twig:block name="content">
                             <twig:DataTable
                                 :rows="analysisRows"
@@ -131,13 +140,40 @@
                                             <td>
                                                 {{ analysis.analysisDate|date('d/m/Y') }}
                                             </td>
-
                                             <td>
                                                 {{ analysis.category ? analysis.category.displayName : '—' }}
                                             </td>
-
                                             <td class="text-end">
                                                 {{ row.formattedAmount ?? '—' }}
+                                            </td>
+                                            <td class="text-end">
+                                                <twig:TableActions>
+                                                    <twig:block name="content">
+                                                        <twig:ActionButton
+                                                            :href="path('app_document_analysis_edit',
+                                                                {
+                                                                    documentId: document.id,
+                                                                    id: analysis.id
+                                                                }
+                                                            )"
+                                                            title="Edit analysis"
+                                                            icon="fa-solid fa-pen"
+                                                        />
+                                                        <twig:ActionForm
+                                                            :action="path('app_document_analysis_delete',
+                                                                {
+                                                                    documentId: document.id,
+                                                                    id: analysis.id
+                                                                }
+                                                            )"
+                                                            csrfTokenId="delete-analysis-{{ analysis.id }}"
+                                                            title="Delete analysis"
+                                                            icon="fa-solid fa-trash"
+                                                            variant="btn-outline-danger"
+                                                            confirmMessage="Delete this analysis?"
+                                                        />
+                                                    </twig:block>
+                                                </twig:TableActions>
                                             </td>
                                         </tr>
                                     {% endfor %}
