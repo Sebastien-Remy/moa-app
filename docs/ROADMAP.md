@@ -1,20 +1,23 @@
-# v0.8 — Financial Analysis Workflow
+## v0.8 — Financial Analysis Workflow
 
-**Status:** Planning
+**Status:** In Progress
 
 ## Goal
 
-Make MOA genuinely usable for everyday business document management by introducing the first complete financial analysis workflow.
+Make MOA genuinely usable for everyday business document management by introducing the first complete financial qualification workflow.
 
-This version focuses on qualifying documents rather than accounting for them.
+This version focuses on qualifying documents rather than implementing a complete accounting system.
 
-Each document should answer three fundamental questions:
+Each document should answer four fundamental questions:
 
-- **Who** does this document concern? (`ThirdParty`)
+- **Who** is the primary third party associated with this document? (`ThirdParty`)
 - **What** does the money correspond to? (`Category`)
 - **Where** should the money be allocated? (`Analysis Dimension Values`)
+- **Who** owes money to whom? (`ThirdPartyEntry`)
 
-The objective is to provide meaningful financial reporting without introducing the complexity of a complete accounting system or bank reconciliation.
+Financial analysis and third-party positions are intentionally modeled as two independent domains.
+
+The objective is to provide meaningful financial reporting without introducing the complexity of double-entry accounting or bank reconciliation.
 
 ---
 
@@ -22,17 +25,18 @@ The objective is to provide meaningful financial reporting without introducing t
 
 ### Financial Analysis
 
-Build upon the existing `Analysis` entity instead of introducing a new financial model.
+Build upon the existing `Analysis` entity.
 
-Each analysis entry represents an allocation of part (or all) of a document amount.
+Each analysis represents an allocation of part (or all) of a document amount.
 
-An analysis entry contains:
+An analysis contains:
 
-- accounting date (analysis date)
-- category
-- one or more analysis dimension values
-- signed amount
-- optional notes
+- analysis date;
+- category;
+- one value for each active analysis dimension;
+- signed amount;
+- currency;
+- optional notes.
 
 The analysis date is independent from the document issue date.
 
@@ -43,60 +47,215 @@ Example:
 ```text
 Train tickets invoice
 
-August travel     120 €
-September travel  180 €
+August travel      -120 €
+September travel   -180 €
 ```
+
+Analysis answers:
+
+> **What does this amount correspond to?**
+
+and
+
+> **Where should it be allocated?**
+
+---
+
+### Analysis Dimensions
+
+Reuse the existing analytical model:
+
+- `AnalysisDimension`
+- `AnalysisDimensionValue`
+- `AnalysisDimensionAssignment`
+
+Active analysis dimensions are automatically displayed in the analysis form.
+
+Each analysis may reference one value for each active dimension.
+
+Example:
+
+```text
+Analysis
+
+Category      Travel
+Project       MOA
+Department    Television
+Amount        -350 €
+```
+
+Adding a new analysis dimension from EasyAdmin must automatically expose it in the frontend without requiring application code changes.
+
+`AnalysisDimensionAssignment` remains an implementation detail and is never exposed directly to end users.
+
+---
+
+### Third Party Entries
+
+Introduce a new entity:
+
+- `ThirdPartyEntry`
+
+Third-party entries are completely independent from analyses.
+
+An analysis answers:
+
+> **Where does the money belong?**
+
+A third-party entry answers:
+
+> **Who owes money to whom?**
+
+Each entry contains:
+
+- entry date;
+- third party;
+- signed amount;
+- currency;
+- optional notes;
+- origin document or origin bank transaction.
+
+Each entry must originate from exactly one source:
+
+```text
+Document XOR BankTransaction
+```
+
+Bank transactions are intentionally excluded from the v0.8 workflow but the data model should already support them.
+
+---
+
+### Multiple Third Parties per Document
+
+The existing `Document.thirdParty` remains the primary third party associated with the document.
+
+It represents document metadata only.
+
+A document may generate multiple `ThirdPartyEntry` records.
+
+Example:
+
+```text
+Payroll summary
+
+Primary third party
+Payroll provider
+
+Third-party entries
+
+Employee A      -2 000 €
+Employee B      -2 100 €
+URSSAF          -1 800 €
+Audiens           -700 €
+```
+
+Another example:
+
+```text
+Expense report
+
+Primary third party
+Employee
+
+Third-party entries
+
+Employee          -245 €
+```
+
+This separates document metadata from financial positions.
 
 ---
 
 ### Third Party Position
 
-Reuse the existing `ThirdParty` entity.
+The financial position of a third party is calculated exclusively from `ThirdPartyEntry`.
 
-Each document remains linked to a single third party.
+It is never calculated from analyses.
 
-The financial position of a third party is calculated from document analyses.
-
-The associated date allows future reporting by accounting period.
-
-Examples:
+Sign convention:
 
 ```text
-EDF
+Positive amount
 
-Invoice
-15/08/2026
-450 €
+The third party owes money to us.
+
+Negative amount
+
+We owe money to the third party.
+```
+
+Example:
+
+```text
+Customer invoice
+
+Customer        +5 000 €
+
+Receivable      +5 000 €
 ```
 
 ```text
-Employee
+Supplier invoice
 
-Expense report
-31/08/2026
-220 €
+Supplier          -500 €
+
+Payable           -500 €
 ```
 
-Bank settlement is intentionally excluded from this version.
+Future bank transaction entries will allow positions to be settled:
+
+```text
+Supplier invoice      -500 €
+Bank payment          +500 €
+----------------------------
+Current position         0 €
+```
+
+Settlement itself is outside the scope of v0.8.
 
 ---
 
 ### Document Analysis Workflow
 
-Extend the existing document edit screen with a dedicated analysis section.
+Extend the existing document edit screen with a dedicated financial analysis section.
 
 Users should be able to:
 
-- view existing analysis entries;
-- add an analysis entry;
-- edit an analysis entry;
-- remove an analysis entry;
-- immediately see:
-    - document amount;
-    - allocated amount;
-    - remaining amount.
+- view analyses;
+- create analyses;
+- edit analyses;
+- delete analyses;
+- assign categories;
+- assign analysis dimensions.
 
-The workflow should remain simple and optimized for everyday document processing.
+The interface should later expose:
+
+- document amount;
+- allocated amount;
+- remaining amount;
+- allocation percentage.
+
+These indicators are informational only.
+
+Analysis amounts are intentionally **not** limited by the document amount.
+
+---
+
+### Document Third Party Workflow
+
+Extend the document edit screen with a dedicated third-party position section.
+
+Users should be able to:
+
+- view third-party entries;
+- create third-party entries;
+- edit third-party entries;
+- delete third-party entries;
+- assign a third party;
+- assign an entry date;
+- assign a signed amount.
+
+The document primary third party and its financial entries remain independent concepts.
 
 ---
 
@@ -108,12 +267,12 @@ Introduce:
 
 - pagination;
 - search;
-- first useful filters;
-- persistent search and filters across pages;
+- useful filters;
+- persistent filters;
 - number of matching documents;
-- cumulative amount of displayed results.
+- cumulative displayed amount.
 
-The footer should display aggregated monetary totals for the current result set.
+The footer should display aggregated totals for the current result set.
 
 ---
 
@@ -121,70 +280,69 @@ The footer should display aggregated monetary totals for the current result set.
 
 Introduce the first analytical dashboard for categories.
 
-Display, for each category:
-
-- allocated amount;
-- number of documents.
-
-Example:
-
-```text
-Hosting                 520 €
-Travel                1 240 €
-Payroll              25 600 €
-Software               890 €
-```
-
-No drill-down is required for this version.
-
----
-
-### Analysis Dimension Summary
-
-Introduce summary pages for each analysis dimension.
-
-Display the cumulative amount allocated to every dimension value.
-
-Examples:
-
-```text
-Project
-
-MOA                 4 200 €
-Internal              980 €
-Client A            8 150 €
-```
-
-The implementation should automatically support every analysis dimension without requiring dedicated code for each one.
-
----
-
-### Third Party Summary
-
-Introduce a summary page listing all third parties.
-
 Display:
 
-- cumulative amount;
+- allocated amount;
 - number of related documents.
 
 Example:
 
 ```text
-EDF                1 250 €
-Amazon               890 €
-URSSAF            12 450 €
+Hosting             -520 €
+Travel            -1 240 €
+Payroll          -25 600 €
+Revenue          +18 500 €
 ```
 
-This page represents the first step toward future payable and receivable management.
+No drill-down is required.
+
+---
+
+### Analysis Dimension Summary
+
+Introduce summary pages for every analysis dimension.
+
+Display the cumulative amount allocated to every dimension value.
+
+Example:
+
+```text
+Project
+
+MOA              -4 200 €
+Internal           -980 €
+Client A        +8 150 €
+```
+
+Every future analysis dimension must automatically be supported.
+
+---
+
+### Third Party Summary
+
+Introduce a summary page for third-party financial positions.
+
+Display:
+
+- current position;
+- number of related documents.
+
+Example:
+
+```text
+EDF             -1 250 €
+Amazon            -890 €
+URSSAF         -12 450 €
+Client A       +8 500 €
+```
+
+The summary is calculated exclusively from `ThirdPartyEntry`.
 
 ---
 
 ## Architecture
 
 Reuse the existing financial domain as much as possible.
-
-No new accounting engine should be introduced.
 
 Continue relying on:
 
@@ -193,20 +351,71 @@ Continue relying on:
 - `Category`
 - `AnalysisDimension`
 - `AnalysisDimensionValue`
+- `AnalysisDimensionAssignment`
 - `ThirdParty`
 
-Business rules belong in services rather than controllers or Twig templates.
+Introduce:
 
-Repository queries should provide aggregated totals directly instead of calculating them in Twig.
+- `ThirdPartyEntry`
 
-This version deliberately avoids introducing:
+The resulting model becomes:
+
+```text
+Document
+├── ThirdParty
+│   └── Primary document third party
+│
+├── Analysis[]
+│   ├── AnalysisDate
+│   ├── Category
+│   ├── Amount
+│   ├── Currency
+│   └── AnalysisDimensionAssignment[]
+│       └── AnalysisDimensionValue
+│
+└── ThirdPartyEntry[]
+    ├── ThirdParty
+    ├── EntryDate
+    ├── Amount
+    └── Currency
+```
+
+Future versions will extend the model with:
+
+```text
+BankTransaction
+└── ThirdPartyEntry[]
+```
+
+while preserving the invariant:
+
+```text
+ThirdPartyEntry
+Document XOR BankTransaction
+```
+
+Business rules belong in services.
+
+Repositories provide aggregated data.
+
+Twig remains responsible only for presentation.
+
+---
+
+## Non Goals
+
+This version deliberately excludes:
 
 - double-entry accounting;
 - chart of accounts;
-- journals;
+- accounting journals;
 - debit / credit entries;
+- general ledger;
 - bank reconciliation;
-- payment tracking.
+- payment matching;
+- payment tracking;
+- settlement workflow;
+- currency conversion.
 
 These features belong to future releases.
 
@@ -216,19 +425,24 @@ These features belong to future releases.
 
 v0.8 can be considered complete when:
 
-- analysis entries support their own accounting date;
-- a document can be allocated across multiple analysis entries;
-- allocated and remaining amounts are clearly visible;
-- document editing provides a complete financial analysis workflow;
+- analyses support their own accounting date;
+- analyses support their own currency;
+- a document supports multiple analyses;
+- analyses support dynamic analysis dimensions;
+- dynamic dimensions automatically appear in the frontend;
+- analyses can be created, edited and deleted;
+- a document supports multiple third-party entries;
+- third-party entries support date, amount, currency and third party;
+- third-party entries support the `Document XOR BankTransaction` model;
+- third-party positions are calculated independently from analyses;
+- document editing provides complete analysis and third-party workflows;
 - the document list supports pagination, search and filtering;
 - cumulative totals are displayed in the document list;
-- category summary pages display aggregated amounts;
-- analysis dimension summary pages display aggregated amounts;
-- third party summary pages display aggregated amounts;
-- existing document import and viewing workflows remain fully compatible;
+- category summaries display analytical totals;
+- analysis dimension summaries display analytical totals;
+- third-party summaries display financial positions;
+- existing document workflows remain fully compatible;
 - EasyAdmin remains compatible with the updated domain model.
-
-
 ---
 
 # Architecture Roadmap
