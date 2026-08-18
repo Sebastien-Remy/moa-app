@@ -117,4 +117,35 @@ class AnalysisDimensionAssignmentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult() !== null;
     }
+
+    /**
+     * @return AnalysisDimensionAssignment[]
+     */
+    public function findForAnalysis(
+        Analysis $analysis,
+    ): array {
+        return $this->createQueryBuilder('assignment')
+            ->leftJoin(
+                'assignment.analysisDimensionValue',
+                'value',
+            )
+            ->addSelect('value')
+            ->leftJoin(
+                'value.analysisDimension',
+                'dimension',
+            )
+            ->addSelect('dimension')
+            ->andWhere(
+                'IDENTITY(assignment.analysis) = :analysisId'
+            )
+            ->setParameter(
+                'analysisId',
+                $analysis->getId(),
+                UlidType::NAME,
+            )
+            ->orderBy('dimension.position', 'ASC')
+            ->addOrderBy('value.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

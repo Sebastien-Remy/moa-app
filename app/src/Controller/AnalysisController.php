@@ -6,6 +6,7 @@ use App\Entity\Analysis;
 use App\Entity\Document;
 use App\Form\AnalysisType;
 use App\Repository\CurrencyRepository;
+use App\Service\AnalysisDimensionSynchronizationService;
 use App\Service\AnalysisService;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +24,8 @@ final class AnalysisController extends BaseController
         Request $request,
         CurrencyRepository $currencyRepository,
         AnalysisService $analysisService,
-    ): Response {
+        AnalysisDimensionSynchronizationService $analysisDimensionSynchronizationService,
+    ): Response{
         $currency = $document->getCurrency()
             ?? $currencyRepository->findDefault();
 
@@ -55,7 +57,19 @@ final class AnalysisController extends BaseController
 
         if ($form->isSubmitted() && $form->isValid()) {
             if ($this->executeBusinessAction(
-                fn () => $analysisService->save($analysis),
+                function () use (
+                    $analysis,
+                    $form,
+                    $analysisService,
+                    $analysisDimensionSynchronizationService,
+                ): void {
+                    $analysisService->save($analysis);
+
+                    $analysisDimensionSynchronizationService->synchronize(
+                        $analysis,
+                        $form,
+                    );
+                },
             )) {
                 $this->addFlash(
                     'success',
@@ -88,6 +102,7 @@ final class AnalysisController extends BaseController
         Analysis $analysis,
         Request $request,
         AnalysisService $analysisService,
+        AnalysisDimensionSynchronizationService $analysisDimensionSynchronizationService,
     ): Response {
         if ($analysis->getDocument() !== $document) {
             throw $this->createNotFoundException();
@@ -113,7 +128,19 @@ final class AnalysisController extends BaseController
 
         if ($form->isSubmitted() && $form->isValid()) {
             if ($this->executeBusinessAction(
-                fn () => $analysisService->save($analysis),
+                function () use (
+                    $analysis,
+                    $form,
+                    $analysisService,
+                    $analysisDimensionSynchronizationService,
+                ): void {
+                    $analysisService->save($analysis);
+
+                    $analysisDimensionSynchronizationService->synchronize(
+                        $analysis,
+                        $form,
+                    );
+                },
             )) {
                 $this->addFlash(
                     'success',
@@ -148,6 +175,7 @@ final class AnalysisController extends BaseController
         Analysis $analysis,
         Request $request,
         AnalysisService $analysisService,
+        AnalysisDimensionSynchronizationService $analysisDimensionSynchronizationService,
     ): Response {
         if ($analysis->getDocument() !== $document) {
             throw $this->createNotFoundException();
@@ -163,7 +191,15 @@ final class AnalysisController extends BaseController
         }
 
         if ($this->executeBusinessAction(
-            fn () => $analysisService->delete($analysis),
+            function () use (
+                $analysis,
+                $analysisService,
+                $analysisDimensionSynchronizationService,
+            ): void {
+                $analysisDimensionSynchronizationService->clear($analysis);
+
+                $analysisService->delete($analysis);
+            },
         )) {
             $this->addFlash(
                 'success',

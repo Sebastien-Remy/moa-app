@@ -15,4 +15,18 @@ class AnalysisDimensionRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, AnalysisDimension::class);
     }
+
+    /**
+     * @return AnalysisDimension[]
+     */
+    public function findActiveOrdered(): array
+    {
+        return $this->createQueryBuilder('dimension')
+            ->andWhere('dimension.active = :active')
+            ->setParameter('active', true)
+            ->orderBy('dimension.position', 'ASC')
+            ->addOrderBy('dimension.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

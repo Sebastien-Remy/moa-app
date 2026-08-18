@@ -92,8 +92,10 @@ class Document
      * @var Collection<int, Analysis>
      */
     #[ORM\OneToMany(
-        mappedBy: 'document',
         targetEntity: Analysis::class,
+        mappedBy: 'document',
+        cascade: ['remove'],
+        orphanRemoval: true,
     )]
     private Collection $analyses;
 

@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Entity\Document;
 use App\Exception\BusinessRuleException;
-use App\Repository\AnalysisRepository;
 use App\Repository\DocumentTransactionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -13,7 +12,6 @@ final readonly class DocumentService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DocumentTransactionRepository $documentTransactionRepository,
-        private AnalysisRepository $analysisRepository,
     ) {
     }
 
@@ -31,15 +29,6 @@ final readonly class DocumentService
         ) {
             throw new BusinessRuleException(
                 'A document with reconciliations cannot be deleted.'
-            );
-        }
-
-        if (
-            $this->analysisRepository
-                ->existsForDocument($document)
-        ) {
-            throw new BusinessRuleException(
-                'A document used by analyses cannot be deleted.'
             );
         }
 

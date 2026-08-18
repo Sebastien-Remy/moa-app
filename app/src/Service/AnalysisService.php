@@ -67,15 +67,6 @@ final readonly class AnalysisService
 
     public function delete(Analysis $analysis): void
     {
-        if (
-            $this->analysisDimensionAssignmentRepository
-                ->existsForAnalysis($analysis)
-        ) {
-            throw new BusinessRuleException(
-                'An analysis with dimension assignments cannot be deleted.'
-            );
-        }
-
         $this->entityManager->remove($analysis);
         $this->entityManager->flush();
     }

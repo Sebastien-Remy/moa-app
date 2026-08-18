@@ -21,7 +21,7 @@ class AnalysisDimensionAssignment
     #[ORM\Column(type: 'ulid', unique: true)]
     private ?Ulid $id = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'analysisDimensionAssignments')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     #[Assert\NotNull]
     private ?Analysis $analysis = null;
