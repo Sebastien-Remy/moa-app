@@ -79,5 +79,58 @@
                 {% endfor %}
             </twig:block>
         </twig:DataTable>
+        {% if pagination.totalPages > 1 %}
+            <nav
+                class="d-flex justify-content-between align-items-center mt-4"
+                aria-label="Document pagination"
+            >
+                <div class="text-body-secondary small">
+                    {{ pagination.total }}
+                    document{{ pagination.total > 1 ? 's' : '' }}
+
+                    • Page {{ pagination.page }}
+                    / {{ pagination.totalPages }}
+                </div>
+
+                <ul class="pagination mb-0">
+
+                    <li class="page-item{% if pagination.page == 1 %} disabled{% endif %}">
+                        <a
+                            class="page-link"
+                            href="{{ path('app_document_index', {
+                                page: pagination.page - 1
+                            }) }}"
+                        >
+                            Previous
+                        </a>
+                    </li>
+
+                    {% for page in 1..pagination.totalPages %}
+                        <li class="page-item{% if page == pagination.page %} active{% endif %}">
+                            <a
+                                class="page-link"
+                                href="{{ path('app_document_index', {
+                                    page: page
+                                }) }}"
+                            >
+                                {{ page }}
+                            </a>
+                        </li>
+                    {% endfor %}
+
+                    <li class="page-item{% if pagination.page == pagination.totalPages %} disabled{% endif %}">
+                        <a
+                            class="page-link"
+                            href="{{ path('app_document_index', {
+                                page: pagination.page + 1
+                            }) }}"
+                        >
+                            Next
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+        {% endif %}
     </div>
 {% endblock %}

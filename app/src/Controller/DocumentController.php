@@ -20,14 +20,21 @@ final class DocumentController extends BaseController
 {
     #[Route('/documents', name: 'app_document_index')]
     public function index(
+        Request $request,
         DocumentRepository $documentRepository,
         MoneyFormatter $moneyFormatter,
     ): Response {
-        $documents = $documentRepository->findForIndex();
+        $page = max(1, $request->query->getInt('page', 1));
+        $perPage = 5;
+
+        $result = $documentRepository->findPaginated(
+            $page,
+            $perPage,
+        );
 
         $rows = [];
 
-        foreach ($documents as $document) {
+        foreach ($result['documents'] as $document) {
             $formattedAmount = null;
 
             if (
@@ -46,8 +53,30 @@ final class DocumentController extends BaseController
             ];
         }
 
+        $total = $result['total'];
+
+        $totalPages = max(
+            1,
+            (int) ceil($total / $perPage),
+        );
+
+        if ($page > $totalPages) {
+            return $this->redirectToRoute(
+                'app_document_index',
+                [
+                    'page' => $totalPages,
+                ],
+            );
+        }
+
         return $this->render('document/index.html.twig', [
             'rows' => $rows,
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'total' => $total,
+                'totalPages' => $totalPages,
+            ],
         ]);
     }
 

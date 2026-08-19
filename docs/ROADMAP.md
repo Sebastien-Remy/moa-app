@@ -1,4 +1,4 @@
-## v0.8 — Financial Analysis Workflow
+# v0.8 — Financial Analysis Workflow
 
 **Status:** In Progress
 

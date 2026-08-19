@@ -56,4 +56,48 @@ class DocumentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return array{
+     *     documents: list<Document>,
+     *     total: int
+     * }
+     */
+    public function findPaginated(
+        int $page,
+        int $perPage,
+    ): array {
+        $page = max(1, $page);
+        $perPage = max(1, $perPage);
+
+        $offset = ($page - 1) * $perPage;
+
+        $documents = $this->createQueryBuilder('document')
+            ->leftJoin('document.thirdParty', 'thirdParty')
+            ->addSelect('thirdParty')
+            ->leftJoin('document.folder', 'folder')
+            ->addSelect('folder')
+            ->leftJoin('document.documentType', 'documentType')
+            ->addSelect('documentType')
+            ->leftJoin('document.status', 'status')
+            ->addSelect('status')
+            ->leftJoin('document.currency', 'currency')
+            ->addSelect('currency')
+            ->orderBy('document.issuedAt', 'DESC')
+            ->addOrderBy('document.recordedAt', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($perPage)
+            ->getQuery()
+            ->getResult();
+
+        $total = (int) $this->createQueryBuilder('document')
+            ->select('COUNT(document.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return [
+            'documents' => $documents,
+            'total' => $total,
+        ];
+    }
 }
