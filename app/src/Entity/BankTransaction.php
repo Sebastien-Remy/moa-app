@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\BankTransactionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
@@ -70,6 +72,22 @@ class BankTransaction
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(max: 255)]
     private ?string $importReference = null;
+
+    /**
+     * @var Collection<int, ThirdPartyEntry>
+     */
+    #[ORM\OneToMany(
+        targetEntity: ThirdPartyEntry::class,
+        mappedBy: 'bankTransaction',
+        cascade: ['remove'],
+        orphanRemoval: true,
+    )]
+    private Collection $thirdPartyEntries;
+
+    public function __construct()
+    {
+        $this->thirdPartyEntries = new ArrayCollection();
+    }
 
     public function getId(): ?Ulid
     {
@@ -188,6 +206,37 @@ class BankTransaction
         $this->importReference = $importReference !== ''
             ? $importReference
             : null;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ThirdPartyEntry>
+     */
+    public function getThirdPartyEntries(): Collection
+    {
+        return $this->thirdPartyEntries;
+    }
+
+    public function addThirdPartyEntry(
+        ThirdPartyEntry $thirdPartyEntry,
+    ): static {
+        if (!$this->thirdPartyEntries->contains($thirdPartyEntry)) {
+            $this->thirdPartyEntries->add($thirdPartyEntry);
+            $thirdPartyEntry->setBankTransaction($this);
+        }
+
+        return $this;
+    }
+
+    public function removeThirdPartyEntry(
+        ThirdPartyEntry $thirdPartyEntry,
+    ): static {
+        if ($this->thirdPartyEntries->removeElement($thirdPartyEntry)) {
+            if ($thirdPartyEntry->getBankTransaction() === $this) {
+                $thirdPartyEntry->setBankTransaction(null);
+            }
+        }
 
         return $this;
     }

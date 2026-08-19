@@ -99,12 +99,24 @@ class Document
     )]
     private Collection $analyses;
 
+    /**
+     * @var Collection<int, ThirdPartyEntry>
+     */
+    #[ORM\OneToMany(
+        targetEntity: ThirdPartyEntry::class,
+        mappedBy: 'document',
+        cascade: ['remove'],
+        orphanRemoval: true,
+    )]
+    private Collection $thirdPartyEntries;
+
     public function __construct()
     {
         $this->recordedAt = new \DateTimeImmutable();
         $this->tags = new ArrayCollection();
         $this->documentFiles = new ArrayCollection();
         $this->analyses = new ArrayCollection();
+        $this->thirdPartyEntries = new ArrayCollection();
     }
 
     public function getId(): ?Ulid
@@ -353,6 +365,37 @@ class Document
         if ($this->analyses->removeElement($analysis)) {
             if ($analysis->getDocument() === $this) {
                 $analysis->setDocument(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ThirdPartyEntry>
+     */
+    public function getThirdPartyEntries(): Collection
+    {
+        return $this->thirdPartyEntries;
+    }
+
+    public function addThirdPartyEntry(
+        ThirdPartyEntry $thirdPartyEntry,
+    ): static {
+        if (!$this->thirdPartyEntries->contains($thirdPartyEntry)) {
+            $this->thirdPartyEntries->add($thirdPartyEntry);
+            $thirdPartyEntry->setDocument($this);
+        }
+
+        return $this;
+    }
+
+    public function removeThirdPartyEntry(
+        ThirdPartyEntry $thirdPartyEntry,
+    ): static {
+        if ($this->thirdPartyEntries->removeElement($thirdPartyEntry)) {
+            if ($thirdPartyEntry->getDocument() === $this) {
+                $thirdPartyEntry->setDocument(null);
             }
         }
 

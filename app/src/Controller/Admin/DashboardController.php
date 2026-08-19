@@ -64,6 +64,12 @@ class DashboardController extends AbstractDashboardController
         );
 
         yield MenuItem::linkTo(
+            ThirdPartyEntryCrudController::class,
+            'Third Party Entries',
+            'fa-solid fa-scale-balanced',
+        );
+
+        yield MenuItem::linkTo(
             AnalysisDimensionAssignmentCrudController::class,
             'Analysis Assignments',
             'fa-solid fa-diagram-project',

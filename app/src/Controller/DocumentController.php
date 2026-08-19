@@ -3,9 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Document;
+use App\Enum\ThirdPartyPosition;
 use App\Form\DocumentType;
 use App\Repository\CurrencyRepository;
 use App\Repository\DocumentRepository;
+use App\Repository\ThirdPartyEntryRepository;
 use App\Service\DocumentService;
 use App\Service\MoneyFormatter;
 use App\Service\StoredFileService;
@@ -97,6 +99,7 @@ final class DocumentController extends BaseController
         CurrencyRepository $currencyRepository,
         DocumentService $documentService,
         MoneyFormatter $moneyFormatter,
+        ThirdPartyEntryRepository $thirdPartyEntryRepository,
     ): Response {
         $currency = $document->getCurrency()
             ?? $currencyRepository->findDefault();
@@ -132,6 +135,30 @@ final class DocumentController extends BaseController
             }
         }
 
+        $thirdPartyEntryRows = [];
+
+        foreach ($thirdPartyEntryRepository->findForDocument($document) as $entry) {
+            $formattedAmount = null;
+
+            if (
+                $entry->getAmount() !== null
+                && $entry->getCurrency() !== null
+            ) {
+                $formattedAmount = $moneyFormatter->format(
+                    abs($entry->getAmount()),
+                    $entry->getCurrency(),
+                );
+            }
+
+            $thirdPartyEntryRows[] = [
+                'entry' => $entry,
+                'position' => ThirdPartyPosition::fromAmount(
+                    $entry->getAmount(),
+                ),
+                'formattedAmount' => $formattedAmount,
+            ];
+        }
+
         $analysisRows = [];
 
         foreach ($document->getAnalyses() as $analysis) {
@@ -156,6 +183,7 @@ final class DocumentController extends BaseController
         return $this->render('document/edit.html.twig', [
             'document' => $document,
             'form' => $form,
+            'thirdPartyEntryRows' => $thirdPartyEntryRows,
             'analysisRows' => $analysisRows,
         ]);
     }

@@ -58,9 +58,20 @@ class ThirdParty
     )]
     private Collection $documents;
 
+    /**
+     * @var Collection<int, ThirdPartyEntry>
+     */
+    #[ORM\OneToMany(
+        targetEntity: ThirdPartyEntry::class,
+        mappedBy: 'thirdParty',
+        fetch: 'EXTRA_LAZY',
+    )]
+    private Collection $thirdPartyEntries;
+
     public function __construct()
     {
         $this->documents = new ArrayCollection();
+        $this->thirdPartyEntries = new ArrayCollection();
     }
 
     public function getId(): ?Ulid
@@ -135,6 +146,19 @@ class ThirdParty
     public function getDocumentCount(): int
     {
         return $this->documents->count();
+    }
+
+    /**
+     * @return Collection<int, ThirdPartyEntry>
+     */
+    public function getThirdPartyEntries(): Collection
+    {
+        return $this->thirdPartyEntries;
+    }
+
+    public function getThirdPartyEntryCount(): int
+    {
+        return $this->thirdPartyEntries->count();
     }
 
     public function getDisplayName(): string
