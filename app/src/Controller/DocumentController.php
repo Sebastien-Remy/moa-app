@@ -26,10 +26,14 @@ final class DocumentController extends BaseController
     ): Response {
         $page = max(1, $request->query->getInt('page', 1));
         $perPage = 5;
+        $search = trim(
+            $request->query->getString('search'),
+        );
 
         $result = $documentRepository->findPaginated(
             $page,
             $perPage,
+            $search !== '' ? $search : null,
         );
 
         $rows = [];
@@ -71,6 +75,7 @@ final class DocumentController extends BaseController
 
         return $this->render('document/index.html.twig', [
             'rows' => $rows,
+            'search' => $search,
             'pagination' => [
                 'page' => $page,
                 'perPage' => $perPage,

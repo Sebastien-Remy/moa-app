@@ -66,13 +66,14 @@ class DocumentRepository extends ServiceEntityRepository
     public function findPaginated(
         int $page,
         int $perPage,
+        ?string $search = null,
     ): array {
         $page = max(1, $page);
         $perPage = max(1, $perPage);
 
         $offset = ($page - 1) * $perPage;
 
-        $documents = $this->createQueryBuilder('document')
+        $queryBuilder = $this->createQueryBuilder('document')
             ->leftJoin('document.thirdParty', 'thirdParty')
             ->addSelect('thirdParty')
             ->leftJoin('document.folder', 'folder')
@@ -82,7 +83,18 @@ class DocumentRepository extends ServiceEntityRepository
             ->leftJoin('document.status', 'status')
             ->addSelect('status')
             ->leftJoin('document.currency', 'currency')
-            ->addSelect('currency')
+            ->addSelect('currency');
+
+        if ($search !== null && $search !== '') {
+            $queryBuilder
+                ->andWhere('LOWER(document.reference) LIKE :search')
+                ->setParameter(
+                    'search',
+                    '%' . mb_strtolower($search) . '%',
+                );
+        }
+
+        $documents = $queryBuilder
             ->orderBy('document.issuedAt', 'DESC')
             ->addOrderBy('document.recordedAt', 'DESC')
             ->setFirstResult($offset)
@@ -90,8 +102,19 @@ class DocumentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        $total = (int) $this->createQueryBuilder('document')
-            ->select('COUNT(document.id)')
+        $countQueryBuilder = $this->createQueryBuilder('document')
+            ->select('COUNT(document.id)');
+
+        if ($search !== null && $search !== '') {
+            $countQueryBuilder
+                ->andWhere('LOWER(document.reference) LIKE :search')
+                ->setParameter(
+                    'search',
+                    '%' . mb_strtolower($search) . '%',
+                );
+        }
+
+        $total = (int) $countQueryBuilder
             ->getQuery()
             ->getSingleScalarResult();
 
