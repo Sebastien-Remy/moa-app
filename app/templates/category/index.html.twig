@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Categories | MOA{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <twig:PageHeader
+            title="Categories"
+            description="Review direct analysis amounts by category."
+        />
+
+        <twig:DataTable
+            :rows="rows"
+            emptyMessage="No categories found."
+        >
+            <twig:block name="header">
+                <tr>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th class="text-end">Documents</th>
+                    <th class="text-end">Amount</th>
+                </tr>
+            </twig:block>
+
+            <twig:block name="body">
+                {% for row in rows %}
+                    {% set category = row.category %}
+
+                    <tr>
+                        <td>
+                            <span
+                                class="d-inline-block"
+                                style="padding-left: {{ row.depth * 1.5 }}rem"
+                            >
+                                {% if row.depth > 0 %}
+                                    <i class="fa-solid fa-turn-up fa-rotate-90 text-body-secondary me-2"></i>
+                                {% endif %}
+
+                                {{ category.name }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if category.active %}
+                                <span class="badge text-bg-success">
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="badge text-bg-secondary">
+                                    Inactive
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end">
+                            {{ row.documentCount }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ row.formattedAmount ?? row.amount }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </twig:block>
+        </twig:DataTable>
+    </div>
+{% endblock %}

@@ -15,4 +15,20 @@ class CategoryRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Category::class);
     }
+
+    /**
+     * @return list<Category>
+     */
+    public function findForIndex(): array
+    {
+        return $this->createQueryBuilder('category')
+            ->leftJoin('category.parent', 'parent')
+            ->addSelect('parent')
+            ->orderBy('parent.position', 'ASC')
+            ->addOrderBy('parent.name', 'ASC')
+            ->addOrderBy('category.position', 'ASC')
+            ->addOrderBy('category.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

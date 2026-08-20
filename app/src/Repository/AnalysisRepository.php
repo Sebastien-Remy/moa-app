@@ -53,4 +53,20 @@ class AnalysisRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getOneOrNullResult() !== null;
     }
+
+    /**
+     * @return list<array{categoryId: string, amount: string|int|null, documentCount: string|int}>
+     */
+    public function summarizeDirectAmountsByCategory(): array
+    {
+        return $this->createQueryBuilder('analysis')
+            ->select('category.id AS categoryId')
+            ->addSelect('COALESCE(SUM(analysis.amount), 0) AS amount')
+            ->addSelect('COUNT(DISTINCT document.id) AS documentCount')
+            ->innerJoin('analysis.category', 'category')
+            ->leftJoin('analysis.document', 'document')
+            ->groupBy('category.id')
+            ->getQuery()
+            ->getArrayResult();
+    }
 }
