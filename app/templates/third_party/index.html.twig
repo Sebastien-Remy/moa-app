@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Third parties | MOA{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <twig:PageHeader
+            title="Third parties"
+            description="Review direct third party entry amounts."
+        />
+
+        <twig:DataTable
+            :rows="rows"
+            emptyMessage="No third parties found."
+        >
+            <twig:block name="header">
+                <tr>
+                    <th>Third party</th>
+                    <th class="text-end">Documents</th>
+                    <th class="text-end">Amount</th>
+                </tr>
+            </twig:block>
+
+            <twig:block name="body">
+                {% for row in rows %}
+                    {% set thirdParty = row.thirdParty %}
+
+                    <tr>
+                        <td>
+                            <i class="fa-solid {{ thirdParty.effectiveFaIcon }} me-2"></i>
+                            {{ thirdParty.name }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ row.documentCount }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ row.formattedAmount ?? row.amount }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </twig:block>
+        </twig:DataTable>
+    </div>
+{% endblock %}

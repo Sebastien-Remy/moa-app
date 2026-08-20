@@ -45,4 +45,20 @@ final class ThirdPartyEntryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<array{thirdPartyId: string, amount: string|int|null, documentCount: string|int}>
+     */
+    public function summarizeDirectAmountsByThirdParty(): array
+    {
+        return $this->createQueryBuilder('entry')
+            ->select('thirdParty.id AS thirdPartyId')
+            ->addSelect('COALESCE(SUM(entry.amount), 0) AS amount')
+            ->addSelect('COUNT(DISTINCT document.id) AS documentCount')
+            ->innerJoin('entry.thirdParty', 'thirdParty')
+            ->leftJoin('entry.document', 'document')
+            ->groupBy('thirdParty.id')
+            ->getQuery()
+            ->getArrayResult();
+    }
 }

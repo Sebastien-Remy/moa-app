@@ -42,7 +42,17 @@
                     href="{{ path('app_analysis_dimension_index') }}"
                 >
                     <i class="fa-solid fa-chart-pie me-2"></i>
-                    Analysis dimensions
+                    Analysis
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a
+                    class="nav-link{% if app.request.attributes.get('_route') starts with 'app_third_party_' %} active{% endif %}"
+                    href="{{ path('app_third_party_index') }}"
+                >
+                    <i class="fa-solid fa-building me-2"></i>
+                    Third parties
                 </a>
             </li>
         </ul>
