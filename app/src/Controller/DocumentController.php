@@ -78,6 +78,21 @@ final class DocumentController extends BaseController
 
         $total = $result['total'];
 
+        $totalAmount = $result['totalAmount'];
+
+        $formattedTotalAmount = null;
+
+        if ($totalAmount !== null) {
+            $currency = $result['documents'][0]->getCurrency() ?? null;
+
+            if ($currency !== null) {
+                $formattedTotalAmount = $moneyFormatter->format(
+                    $totalAmount,
+                    $currency,
+                );
+            }
+        }
+
         $totalPages = max(
             1,
             (int) ceil($total / $perPage),
@@ -109,6 +124,7 @@ final class DocumentController extends BaseController
                 'total' => $total,
                 'totalPages' => $totalPages,
             ],
+            'formattedTotalAmount' => $formattedTotalAmount,
         ]);
     }
 
