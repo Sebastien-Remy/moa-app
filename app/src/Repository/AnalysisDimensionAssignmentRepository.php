@@ -148,4 +148,21 @@ class AnalysisDimensionAssignmentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<array{valueId: string, amount: string|int|null, documentCount: string|int}>
+     */
+    public function summarizeDirectAmountsByValue(): array
+    {
+        return $this->createQueryBuilder('assignment')
+            ->select('value.id AS valueId')
+            ->addSelect('COALESCE(SUM(analysis.amount), 0) AS amount')
+            ->addSelect('COUNT(DISTINCT document.id) AS documentCount')
+            ->innerJoin('assignment.analysisDimensionValue', 'value')
+            ->innerJoin('assignment.analysis', 'analysis')
+            ->leftJoin('analysis.document', 'document')
+            ->groupBy('value.id')
+            ->getQuery()
+            ->getArrayResult();
+    }
 }

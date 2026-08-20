@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Analysis dimensions | MOA{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <twig:PageHeader
+            title="Analysis dimensions"
+            description="Review direct analysis amounts by dimension value."
+        />
+
+        <twig:DataTable
+            :rows="rows"
+            emptyMessage="No analysis dimension values found."
+        >
+            <twig:block name="header">
+                <tr>
+                    <th>Dimension</th>
+                    <th>Value</th>
+                    <th>Status</th>
+                    <th class="text-end">Documents</th>
+                    <th class="text-end">Amount</th>
+                </tr>
+            </twig:block>
+
+            <twig:block name="body">
+                {% set currentDimensionId = null %}
+
+                {% for row in rows %}
+                    {% set dimension = row.dimension %}
+                    {% set value = row.value %}
+                    {% set dimensionId = dimension ? dimension.id : null %}
+                    {% set showDimension = dimensionId != currentDimensionId %}
+                    {% set currentDimensionId = dimensionId %}
+
+                    <tr>
+                        <td>
+                            {% if showDimension %}
+                                {{ dimension ? dimension.name : '—' }}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span
+                                class="d-inline-block"
+                                style="padding-left: {{ row.depth * 1.5 }}rem"
+                            >
+                                {% if row.depth > 0 %}
+                                    <i class="fa-solid fa-turn-up fa-rotate-90 text-body-secondary me-2"></i>
+                                {% endif %}
+
+                                {{ value.name }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if value.active %}
+                                <span class="badge text-bg-success">
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="badge text-bg-secondary">
+                                    Inactive
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end">
+                            {{ row.documentCount }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ row.formattedAmount ?? row.amount }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </twig:block>
+        </twig:DataTable>
+    </div>
+{% endblock %}

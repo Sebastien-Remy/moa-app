@@ -39,4 +39,24 @@ class AnalysisDimensionValueRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<AnalysisDimensionValue>
+     */
+    public function findForIndex(): array
+    {
+        return $this->createQueryBuilder('value')
+            ->leftJoin('value.analysisDimension', 'dimension')
+            ->addSelect('dimension')
+            ->leftJoin('value.parent', 'parent')
+            ->addSelect('parent')
+            ->orderBy('dimension.position', 'ASC')
+            ->addOrderBy('dimension.name', 'ASC')
+            ->addOrderBy('parent.position', 'ASC')
+            ->addOrderBy('parent.name', 'ASC')
+            ->addOrderBy('value.position', 'ASC')
+            ->addOrderBy('value.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
