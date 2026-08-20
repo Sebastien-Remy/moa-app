@@ -31,4 +31,15 @@ class StatusRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult() !== null;
     }
+
+    /**
+     * @return list<Status>
+     */
+    public function findOrdered(): array
+    {
+        return $this->createQueryBuilder('status')
+            ->orderBy('status.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

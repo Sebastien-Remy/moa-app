@@ -67,6 +67,11 @@ class DocumentRepository extends ServiceEntityRepository
         int $page,
         int $perPage,
         ?string $search = null,
+        ?string $folderId = null,
+        ?string $thirdPartyId = null,
+        ?string $statusId = null,
+        ?string $dateFrom = null,
+        ?string $dateTo = null,
     ): array {
         $page = max(1, $page);
         $perPage = max(1, $perPage);
@@ -94,6 +99,50 @@ class DocumentRepository extends ServiceEntityRepository
                 );
         }
 
+        if ($folderId !== null && $folderId !== '') {
+            $queryBuilder
+                ->andWhere('IDENTITY(document.folder) = :folderId')
+                ->setParameter(
+                    'folderId',
+                    $folderId,
+                    UlidType::NAME,
+                );
+        }
+
+        if ($thirdPartyId !== null && $thirdPartyId !== '') {
+            $queryBuilder
+                ->andWhere('IDENTITY(document.thirdParty) = :thirdPartyId')
+                ->setParameter(
+                    'thirdPartyId',
+                    $thirdPartyId,
+                    UlidType::NAME,
+                );
+        }
+
+        if ($statusId !== null && $statusId !== '') {
+            $queryBuilder
+                ->andWhere('IDENTITY(document.status) = :statusId')
+                ->setParameter(
+                    'statusId',
+                    $statusId,
+                    UlidType::NAME,
+                );
+        }
+
+        if ($dateFrom !== null && $dateFrom !== '') {
+            $queryBuilder
+                ->andWhere('document.issuedAt IS NOT NULL')
+                ->andWhere('document.issuedAt >= :dateFrom')
+                ->setParameter('dateFrom', $dateFrom);
+        }
+
+        if ($dateTo !== null && $dateTo !== '') {
+            $queryBuilder
+                ->andWhere('document.issuedAt IS NOT NULL')
+                ->andWhere('document.issuedAt <= :dateTo')
+                ->setParameter('dateTo', $dateTo);
+        }
+
         $documents = $queryBuilder
             ->orderBy('document.issuedAt', 'DESC')
             ->addOrderBy('document.recordedAt', 'DESC')
@@ -112,6 +161,50 @@ class DocumentRepository extends ServiceEntityRepository
                     'search',
                     '%' . mb_strtolower($search) . '%',
                 );
+        }
+
+        if ($folderId !== null && $folderId !== '') {
+            $countQueryBuilder
+                ->andWhere('IDENTITY(document.folder) = :folderId')
+                ->setParameter(
+                    'folderId',
+                    $folderId,
+                    UlidType::NAME,
+                );
+        }
+
+        if ($thirdPartyId !== null && $thirdPartyId !== '') {
+            $countQueryBuilder
+                ->andWhere('IDENTITY(document.thirdParty) = :thirdPartyId')
+                ->setParameter(
+                    'thirdPartyId',
+                    $thirdPartyId,
+                    UlidType::NAME,
+                );
+        }
+
+        if ($statusId !== null && $statusId !== '') {
+            $countQueryBuilder
+                ->andWhere('IDENTITY(document.status) = :statusId')
+                ->setParameter(
+                    'statusId',
+                    $statusId,
+                    UlidType::NAME,
+                );
+        }
+
+        if ($dateFrom !== null && $dateFrom !== '') {
+            $countQueryBuilder
+                ->andWhere('document.issuedAt IS NOT NULL')
+                ->andWhere('document.issuedAt >= :dateFrom')
+                ->setParameter('dateFrom', $dateFrom);
+        }
+
+        if ($dateTo !== null && $dateTo !== '') {
+            $countQueryBuilder
+                ->andWhere('document.issuedAt IS NOT NULL')
+                ->andWhere('document.issuedAt <= :dateTo')
+                ->setParameter('dateTo', $dateTo);
         }
 
         $total = (int) $countQueryBuilder

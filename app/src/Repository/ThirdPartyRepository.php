@@ -31,4 +31,15 @@ class ThirdPartyRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult() !== null;
     }
+
+    /**
+     * @return list<ThirdParty>
+     */
+    public function findOrdered(): array
+    {
+        return $this->createQueryBuilder('thirdParty')
+            ->orderBy('thirdParty.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

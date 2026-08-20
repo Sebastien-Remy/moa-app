@@ -31,4 +31,15 @@ class FolderRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult() !== null;
     }
+
+    /**
+     * @return list<Folder>
+     */
+    public function findOrdered(): array
+    {
+        return $this->createQueryBuilder('folder')
+            ->orderBy('folder.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
