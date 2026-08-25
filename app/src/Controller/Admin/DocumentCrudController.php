@@ -14,6 +14,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -91,52 +92,86 @@ final class DocumentCrudController extends BaseCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        yield TextField::new('id', 'UUID')
+            ->onlyOnDetail();
+
         yield DateTimeField::new('recordedAt', 'Recorded At')
             ->setFormat('dd/MM/yyyy HH:mm')
-            ->onlyOnIndex();
+            ->hideOnForm();
+
+        yield Field::new('uploadedFile', 'File')
+            ->setFormType(FileType::class)
+            ->setFormTypeOption('mapped', false)
+            ->setRequired(true)
+            ->onlyWhenCreating();
 
         yield DateField::new('issuedAt', 'Document Date')
-            ->setFormat('dd/MM/yyyy')
-            ->onlyOnIndex();
+            ->setFormat('dd/MM/yyyy');
 
         yield TextField::new('directionDisplay', 'Direction')
             ->renderAsHtml()
-            ->onlyOnIndex();
+            ->hideOnForm();
+
+        yield ChoiceField::new('direction', 'Direction')
+            ->setChoices([
+                'Incoming' => DocumentDirection::Incoming,
+                'Outgoing' => DocumentDirection::Outgoing,
+                'Internal' => DocumentDirection::Internal,
+            ])
+            ->onlyOnForms();
 
         yield TextField::new('reference', 'Reference')
             ->formatValue(
                 static fn (?string $value): string => $value ?: '—'
+            );
+
+        yield BooleanField::new('isModel', 'Model')
+            ->renderAsSwitch(false);
+
+        yield TextField::new('modelDisplayName', 'Model Name')
+            ->formatValue(
+                static function (?string $value, Document $document): string {
+                    if (!$document->isModel()) {
+                        return '—';
+                    }
+
+                    return $document->getModelDisplayName();
+                }
             )
-            ->onlyOnIndex();
+            ->hideOnForm();
+
+        yield TextField::new('modelName', 'Model Name')
+            ->setHelp(
+                'Optional. If empty, the document display name will be used.'
+            )
+            ->onlyOnForms();
 
         yield AssociationField::new('thirdParty', 'Third Party')
             ->formatValue(
                 static fn (?string $value): string => $value ?: '—'
-            )
-            ->onlyOnIndex();
+            );
 
         yield AssociationField::new('folder', 'Folder')
             ->formatValue(
                 static fn (?string $value): string => $value ?: '—'
-            )
-            ->onlyOnIndex();
+            );
 
         yield AssociationField::new('documentType', 'Document Type')
             ->formatValue(
                 static fn (?string $value): string => $value ?: '—'
-            )
-            ->onlyOnIndex();
+            );
 
         yield AssociationField::new('status', 'Status')
             ->formatValue(
                 static fn (?string $value): string => $value ?: '—'
-            )
-            ->onlyOnIndex();
+            );
 
         yield MoneyField::new('totalAmount', 'Amount')
             ->setCurrencyPropertyPath('currency.code')
-            ->setStoredAsCents()
-            ->onlyOnIndex();
+            ->setStoredAsCents();
+
+        yield AssociationField::new('currency', 'Currency')
+            ->hideOnIndex();
 
         yield AssociationField::new('tags', 'Tags')
             ->formatValue(
@@ -154,115 +189,18 @@ final class DocumentCrudController extends BaseCrudController
                             ->toArray()
                     );
                 }
-            )
-            ->onlyOnIndex();
-
-        yield Field::new('uploadedFile', 'File')
-            ->setFormType(FileType::class)
-            ->setFormTypeOption('mapped', false)
-            ->setRequired(true)
-            ->onlyWhenCreating();
-
-        yield DateField::new('issuedAt', 'Document Date')
-            ->setFormat('dd/MM/yyyy')
-            ->onlyOnForms();
-
-        yield ChoiceField::new('direction', 'Direction')
-            ->setChoices([
-                'Incoming' => DocumentDirection::Incoming,
-                'Outgoing' => DocumentDirection::Outgoing,
-                'Internal' => DocumentDirection::Internal,
-            ])
-            ->onlyOnForms();
-
-        yield TextField::new('reference', 'Reference')
-            ->onlyOnForms();
-
-        yield AssociationField::new('thirdParty', 'Third Party')
-            ->onlyOnForms();
-
-        yield AssociationField::new('folder', 'Folder')
-            ->onlyOnForms();
-
-        yield AssociationField::new('documentType', 'Document Type')
-            ->onlyOnForms();
-
-        yield AssociationField::new('status', 'Status')
-            ->onlyOnForms();
-
-        yield MoneyField::new('totalAmount', 'Amount')
-            ->setCurrencyPropertyPath('currency.code')
-            ->setStoredAsCents()
-            ->onlyOnForms();
-
-        yield AssociationField::new('currency', 'Currency')
-            ->onlyOnForms();
-
-        yield AssociationField::new('tags', 'Tags')
-            ->onlyOnForms();
+            );
 
         yield DateField::new('validFrom', 'Valid From')
             ->setFormat('dd/MM/yyyy')
-            ->onlyOnForms();
+            ->hideOnIndex();
 
         yield DateField::new('validUntil', 'Valid Until')
             ->setFormat('dd/MM/yyyy')
-            ->onlyOnForms();
+            ->hideOnIndex();
 
         yield TextareaField::new('notes', 'Notes')
-            ->onlyOnForms();
-
-        yield TextField::new('id', 'UUID')
-            ->onlyOnDetail();
-
-        yield DateTimeField::new('recordedAt', 'Recorded At')
-            ->setFormat('dd/MM/yyyy HH:mm')
-            ->onlyOnDetail();
-
-        yield DateField::new('issuedAt', 'Document Date')
-            ->setFormat('dd/MM/yyyy')
-            ->onlyOnDetail();
-
-        yield TextField::new('directionDisplay', 'Direction')
-            ->renderAsHtml()
-            ->onlyOnDetail();
-
-        yield TextField::new('reference', 'Reference')
-            ->onlyOnDetail();
-
-        yield AssociationField::new('thirdParty', 'Third Party')
-            ->onlyOnDetail();
-
-        yield AssociationField::new('folder', 'Folder')
-            ->onlyOnDetail();
-
-        yield AssociationField::new('documentType', 'Document Type')
-            ->onlyOnDetail();
-
-        yield AssociationField::new('status', 'Status')
-            ->onlyOnDetail();
-
-        yield MoneyField::new('totalAmount', 'Amount')
-            ->setCurrencyPropertyPath('currency.code')
-            ->setStoredAsCents()
-            ->onlyOnDetail();
-
-        yield AssociationField::new('currency', 'Currency')
-            ->onlyOnDetail();
-
-        yield AssociationField::new('tags', 'Tags')
-            ->onlyOnDetail();
-
-        yield DateField::new('validFrom', 'Valid From')
-            ->setFormat('dd/MM/yyyy')
-            ->onlyOnDetail();
-
-        yield DateField::new('validUntil', 'Valid Until')
-            ->setFormat('dd/MM/yyyy')
-            ->onlyOnDetail();
-
-        yield TextareaField::new('notes', 'Notes')
-            ->onlyOnDetail();
+            ->hideOnIndex();
     }
 
     #[AdminRoute(

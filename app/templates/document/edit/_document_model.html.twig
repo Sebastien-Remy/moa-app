@@ -1,0 +1,56 @@
+<twig:ExpandableCard
+    id="document-model"
+    title="Document model"
+    description="Use an existing document as a model for this document."
+    :expanded="true"
+>
+    <twig:block name="content">
+        <form
+            method="post"
+            action="{{ path('app_document_apply_model', { id: document.id }) }}"
+        >
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-9">
+                    <label
+                        for="document-model-select"
+                        class="form-label"
+                    >
+                        Model
+                    </label>
+
+                    <select
+                        id="document-model-select"
+                        name="modelId"
+                        class="form-select"
+                        required
+                    >
+                        <option value="">
+                            Select a model…
+                        </option>
+
+                        {% for model in models %}
+                            <option value="{{ model.id }}">
+                                {{ model.modelDisplayName }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <button
+                        type="submit"
+                        class="btn btn-outline-primary w-100"
+                    >
+                        Apply
+                    </button>
+                </div>
+            </div>
+
+            <input
+                type="hidden"
+                name="_token"
+                value="{{ csrf_token('apply-document-model-' ~ document.id) }}"
+            >
+        </form>
+    </twig:block>
+</twig:ExpandableCard>

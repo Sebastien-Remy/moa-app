@@ -1,0 +1,100 @@
+<twig:ExpandableCard
+    id="document-information"
+    title="Document information"
+    description="Edit document metadata and classification."
+    :expanded="true"
+>
+    <twig:block name="content">
+        {{ form_start(form) }}
+
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                {{ form_row(form.issuedAt) }}
+            </div>
+
+            <div class="col-12 col-md-6">
+                {{ form_row(form.direction) }}
+            </div>
+
+            <div class="col-12">
+                {{ form_row(form.reference) }}
+            </div>
+
+            <div class="col-12 col-md-6">
+                {{ form_row(form.thirdParty) }}
+            </div>
+
+            <div class="col-12 col-md-6">
+                {{ form_row(form.folder) }}
+            </div>
+
+            <div class="col-12 col-md-6">
+                {{ form_row(form.documentType) }}
+            </div>
+
+            <div class="col-12 col-md-6">
+                {{ form_row(form.status) }}
+            </div>
+
+            <div class="col-12 col-md-6">
+                {{ form_row(form.totalAmount) }}
+            </div>
+
+            <div class="col-12">
+                {{ form_row(form.tags) }}
+            </div>
+
+            <div class="col-12 col-md-6">
+                {{ form_row(form.validFrom) }}
+            </div>
+
+            <div class="col-12 col-md-6">
+                {{ form_row(form.validUntil) }}
+            </div>
+
+            <div class="col-12">
+                {{ form_row(form.notes) }}
+            </div>
+
+            <div class="col-12 col-md-8">
+                {{ form_row(form.modelName) }}
+            </div>
+
+            <div class="col-12 col-md-4 d-flex align-items-center">
+                <div class="form-check mt-3">
+                    {{ form_widget(form.isModel, {
+                        attr: {
+                            class: 'form-check-input'
+                        }
+                    }) }}
+
+                    {{ form_label(form.isModel, 'Use as model', {
+                        label_attr: {
+                            class: 'form-check-label'
+                        }
+                    }) }}
+
+                    {{ form_errors(form.isModel) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a
+                href="{{ path('app_document_index') }}"
+                class="btn btn-outline-secondary"
+            >
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Save
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </twig:block>
+</twig:ExpandableCard>

@@ -14,6 +14,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: DocumentRepository::class)]
+#[ORM\Index(
+    name: 'idx_document_is_model',
+    columns: ['is_model'],
+)]
 class Document
 {
     #[ORM\Id]
@@ -44,6 +48,13 @@ class Document
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(max: 255)]
     private ?string $reference = null;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $isModel = false;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $modelName = null;
 
     #[ORM\Column(type: Types::BIGINT, nullable: true)]
     #[Assert\PositiveOrZero]
@@ -202,6 +213,31 @@ class Document
     {
         $reference = $reference !== null ? trim($reference) : null;
         $this->reference = $reference !== '' ? $reference : null;
+
+        return $this;
+    }
+
+    public function isModel(): bool
+    {
+        return $this->isModel;
+    }
+
+    public function setIsModel(bool $isModel): static
+    {
+        $this->isModel = $isModel;
+
+        return $this;
+    }
+
+    public function getModelName(): ?string
+    {
+        return $this->modelName;
+    }
+
+    public function setModelName(?string $modelName): static
+    {
+        $modelName = $modelName !== null ? trim($modelName) : null;
+        $this->modelName = $modelName !== '' ? $modelName : null;
 
         return $this;
     }
@@ -464,6 +500,11 @@ class Document
         }
 
         return implode(' | ', $parts);
+    }
+
+    public function getModelDisplayName(): string
+    {
+        return $this->modelName ?? $this->getDisplayName();
     }
 
     public function __toString(): string

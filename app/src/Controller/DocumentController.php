@@ -11,6 +11,7 @@ use App\Repository\FolderRepository;
 use App\Repository\ThirdPartyRepository;
 use App\Repository\ThirdPartyEntryRepository;
 use App\Repository\StatusRepository;
+use App\Service\DocumentModelService;
 use App\Service\DocumentService;
 use App\Service\MoneyFormatter;
 use App\Service\StoredFileService;
@@ -36,6 +37,7 @@ final class DocumentController extends BaseController
         $folder = $request->query->getString('folder');
         $status = $request->query->getString('status');
         $thirdParty = $request->query->getString('thirdParty');
+        $model = $request->query->getString('model');
 
         $dateFrom = $request->query->getString('dateFrom');
         $dateTo = $request->query->getString('dateTo');
@@ -51,6 +53,7 @@ final class DocumentController extends BaseController
             $folder !== '' ? $folder : null,
             $thirdParty !== '' ? $thirdParty : null,
             $status !== '' ? $status : null,
+            $model !== '' ? $model : null,
             $dateFrom !== '' ? $dateFrom : null,
             $dateTo !== '' ? $dateTo : null,
         );
@@ -81,18 +84,27 @@ final class DocumentController extends BaseController
         $totalAmount = $result['totalAmount'];
 
         $formattedTotalAmount = null;
+        $totalCurrency = null;
 
         if ($totalAmount !== null) {
-            $currency = $result['documents'][0]->getCurrency() ?? null;
+            foreach ($result['documents'] as $document) {
+                if (
+                    $document->getTotalAmount() !== null
+                    && $document->getCurrency() !== null
+                ) {
+                    $totalCurrency = $document->getCurrency();
 
-            if ($currency !== null) {
+                    break;
+                }
+            }
+
+            if ($totalCurrency !== null) {
                 $formattedTotalAmount = $moneyFormatter->format(
                     $totalAmount,
-                    $currency,
+                    $totalCurrency,
                 );
             }
         }
-
         $totalPages = max(
             1,
             (int) ceil($total / $perPage),
@@ -116,6 +128,7 @@ final class DocumentController extends BaseController
             'thirdParty' => $thirdParty,
             'statuses' => $statusRepository->findOrdered(),
             'status' => $status,
+            'model' => $model,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'pagination' => [
@@ -174,6 +187,7 @@ final class DocumentController extends BaseController
         Document $document,
         Request $request,
         CurrencyRepository $currencyRepository,
+        DocumentRepository $documentRepository,
         DocumentService $documentService,
         MoneyFormatter $moneyFormatter,
         ThirdPartyEntryRepository $thirdPartyEntryRepository,
@@ -260,9 +274,84 @@ final class DocumentController extends BaseController
         return $this->render('document/edit.html.twig', [
             'document' => $document,
             'form' => $form,
+            'models' => $documentRepository->findModels(),
             'thirdPartyEntryRows' => $thirdPartyEntryRows,
             'analysisRows' => $analysisRows,
         ]);
+    }
+
+    #[Route(
+        '/documents/{id}/apply-model',
+        name: 'app_document_apply_model',
+        methods: ['POST'],
+    )]
+    public function applyModel(
+        Document $document,
+        Request $request,
+        DocumentRepository $documentRepository,
+        DocumentModelService $documentModelService,
+        DocumentService $documentService,
+    ): Response {
+        if (!$this->isCsrfTokenValid(
+            'apply-document-model-' . $document->getId(),
+            (string) $request->request->get('_token'),
+        )) {
+            throw $this->createAccessDeniedException(
+                'Invalid CSRF token.',
+            );
+        }
+
+        $modelId = $request->request->getString('modelId');
+
+        if ($modelId === '') {
+            $this->addFlash(
+                'warning',
+                'Please select a document model.',
+            );
+
+            return $this->redirectToRoute(
+                'app_document_edit',
+                [
+                    'id' => (string) $document->getId(),
+                ],
+            );
+        }
+
+        $model = $documentRepository->find($modelId);
+
+        if (!$model instanceof Document || !$model->isModel()) {
+            throw $this->createNotFoundException(
+                'Document model not found.',
+            );
+        }
+
+        if ($this->executeBusinessAction(
+            function () use (
+                $documentModelService,
+                $documentService,
+                $document,
+                $model,
+            ): void {
+                $documentModelService->apply(
+                    $document,
+                    $model,
+                );
+
+                $documentService->save($document);
+            },
+        )) {
+            $this->addFlash(
+                'success',
+                'Document model applied successfully.',
+            );
+        }
+
+        return $this->redirectToRoute(
+            'app_document_edit',
+            [
+                'id' => (string) $document->getId(),
+            ],
+        );
     }
 
     #[Route(

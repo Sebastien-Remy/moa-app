@@ -12,6 +12,7 @@ use App\Entity\ThirdParty;
 use App\Enum\DocumentDirection;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
@@ -49,6 +50,15 @@ final class DocumentType extends AbstractType
             ])
             ->add('reference', TextType::class, [
                 'required' => false,
+            ])
+            ->add('isModel', CheckboxType::class, [
+                'label' => 'Model',
+                'required' => false,
+            ])
+            ->add('modelName', TextType::class, [
+                'label' => 'Model Name',
+                'required' => false,
+                'help' => 'Optional. If empty, the document display name will be used.',
             ])
             ->add('thirdParty', EntityType::class, [
                 'class' => ThirdParty::class,

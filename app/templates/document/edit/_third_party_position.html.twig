@@ -1,0 +1,93 @@
+<twig:ExpandableCard
+    id="third-party-position"
+    title="Third party position"
+    description="Track payables and receivables linked to this document."
+    :expanded="true"
+>
+    <twig:block name="actions">
+        <a
+            href="{{ path('app_document_third_party_entry_new', { id: document.id }) }}"
+            class="btn btn-sm btn-primary"
+        >
+            <i class="fa-solid fa-plus me-1"></i>
+            Add entry
+        </a>
+    </twig:block>
+
+    <twig:block name="content">
+        <twig:DataTable
+            :rows="thirdPartyEntryRows"
+            emptyMessage="No third party entries yet."
+        >
+            <twig:block name="header">
+                <tr>
+                    <th>Date</th>
+                    <th>Third party</th>
+                    <th>Position</th>
+                    <th class="text-end">Amount</th>
+                </tr>
+            </twig:block>
+
+            <twig:block name="body">
+                {% for row in thirdPartyEntryRows %}
+                    {% set entry = row.entry %}
+                    {% set position = row.position %}
+
+                    <tr>
+                        <td>
+                            {{ entry.entryDate|date('d/m/Y') }}
+                        </td>
+
+                        <td>
+                            {{ entry.thirdParty.displayName }}
+                        </td>
+
+                        <td>
+                                                <span class="{{ position.colorClass }}">
+                                                    <i class="{{ position.icon }} me-1"></i>
+                                                    {{ position.label }}
+                                                </span>
+                        </td>
+
+                        <td class="text-end">
+                            {{ row.formattedAmount ?? '—' }}
+                        </td>
+                        <td class="text-end">
+                            <twig:TableActions>
+                                <twig:block name="content">
+                                    <twig:ActionButton
+                                        :href="path(
+                                                                'app_document_third_party_entry_edit',
+                                                                {
+
+                                                                    documentId: document.id,
+                                                                    id: entry.id
+                                                                }
+                                                            )"
+                                        title="Edit entry"
+                                        icon="fa-solid fa-pen"
+                                    />
+
+                                    <twig:ActionForm
+                                        :action="path(
+                                                                'app_document_third_party_entry_delete',
+                                                                {
+                                                                    documentId: document.id,
+                                                                    id: entry.id
+                                                                }
+                                                            )"
+                                        csrfTokenId="delete-third-party-entry-{{ entry.id }}"
+                                        title="Delete entry"
+                                        icon="fa-solid fa-trash"
+                                        variant="btn-outline-danger"
+                                        confirmMessage="Delete this third party entry?"
+                                    />
+                                </twig:block>
+                            </twig:TableActions>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </twig:block>
+        </twig:DataTable>
+    </twig:block>
+</twig:ExpandableCard>

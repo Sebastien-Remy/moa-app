@@ -72,6 +72,7 @@ class DocumentRepository extends ServiceEntityRepository
         ?string $folderId = null,
         ?string $thirdPartyId = null,
         ?string $statusId = null,
+        ?string $model = null,
         ?string $dateFrom = null,
         ?string $dateTo = null,
     ): array {
@@ -98,6 +99,7 @@ class DocumentRepository extends ServiceEntityRepository
             $folderId,
             $thirdPartyId,
             $statusId,
+            $model,
             $dateFrom,
             $dateTo,
         );
@@ -119,6 +121,7 @@ class DocumentRepository extends ServiceEntityRepository
             $folderId,
             $thirdPartyId,
             $statusId,
+            $model,
             $dateFrom,
             $dateTo,
         );
@@ -140,6 +143,7 @@ class DocumentRepository extends ServiceEntityRepository
             $folderId,
             $thirdPartyId,
             $statusId,
+            $model,
             $dateFrom,
             $dateTo,
         );
@@ -161,6 +165,7 @@ class DocumentRepository extends ServiceEntityRepository
         ?string $folderId,
         ?string $thirdPartyId,
         ?string $statusId,
+        ?string $model,
         ?string $dateFrom,
         ?string $dateTo,
     ): void {
@@ -209,6 +214,16 @@ class DocumentRepository extends ServiceEntityRepository
                 );
         }
 
+        if ($model === '1') {
+            $queryBuilder
+                ->andWhere('document.isModel = true');
+        }
+
+        if ($model === '0') {
+            $queryBuilder
+                ->andWhere('document.isModel = false');
+        }
+
         if ($dateFrom !== null && $dateFrom !== '') {
             $queryBuilder
                 ->andWhere('document.issuedAt IS NOT NULL')
@@ -228,5 +243,26 @@ class DocumentRepository extends ServiceEntityRepository
                     $dateTo,
                 );
         }
+    }
+
+    /**
+     * @return list<Document>
+     */
+    public function findModels(): array
+    {
+        $documents = $this->createQueryBuilder('document')
+            ->andWhere('document.isModel = true')
+            ->getQuery()
+            ->getResult();
+
+        usort(
+            $documents,
+            static fn (Document $a, Document $b): int => strcasecmp(
+                $a->getModelDisplayName(),
+                $b->getModelDisplayName(),
+            ),
+        );
+
+        return $documents;
     }
 }
