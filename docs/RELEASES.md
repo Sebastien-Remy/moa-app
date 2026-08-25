@@ -2,6 +2,37 @@
 
 # Releases
 
+## v0.8.0 — Financial Analysis Workflow
+
+Released
+
+### Summary
+
+v0.8 introduces the first complete financial analysis workflow in the MOA frontend.
+
+Documents can now be searched, filtered and analyzed directly from the workspace, with analytical allocations, third-party entries and financial summaries.
+
+### Added
+
+- Paginated document list.
+- Document search.
+- Document filtering.
+- Matching document count and cumulative amount.
+- Financial analysis workflow for documents.
+- Analytical allocations by category.
+- Dynamic analysis dimensions.
+- Third-party entries.
+- Category summary page.
+- Analysis dimension summary page.
+- Third-party summary page.
+- Financial totals and allocation summaries.
+
+### Result
+
+MOA now provides its first complete user-facing financial qualification workflow.
+
+Documents can be classified, analyzed and summarized without relying on EasyAdmin for day-to-day financial work.
+
 ## v0.7.0 — Front Foundation
 
 Released
