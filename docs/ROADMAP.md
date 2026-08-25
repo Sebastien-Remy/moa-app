@@ -1,448 +1,479 @@
-# v0.8 — Financial Analysis Workflow
+# v0.9 — Assisted Document Entry
 
-**Status:** Completed
+**Status:** Planning
 
 ## Goal
 
-Make MOA genuinely usable for everyday business document management by introducing the first complete financial qualification workflow.
+Improve document entry in MOA by reducing repetitive work and making recurring and batch document imports faster.
 
-This version focuses on qualifying documents rather than implementing a complete accounting system.
+This version introduces three complementary improvements:
 
-Each document should answer four fundamental questions:
+- configurable default document status;
+- reusable document models based on existing documents;
+- batch file import.
 
-- **Who** is the primary third party associated with this document? (`ThirdParty`)
-- **What** does the money correspond to? (`Category`)
-- **Where** should the money be allocated? (`Analysis Dimension Values`)
-- **Who** owes money to whom? (`ThirdPartyEntry`)
-
-Financial analysis and third-party positions are intentionally modeled as two independent domains.
-
-The objective is to provide meaningful financial reporting without introducing the complexity of double-entry accounting or bank reconciliation.
+The objective is to accelerate document entry while keeping the workflow explicit, predictable and fully controlled by the user.
 
 ---
 
 ## Scope
 
-### Financial Analysis
+### Default Document Status
 
-Build upon the existing `Analysis` entity.
+Allow one `Status` to be configured as the default status for newly created documents.
 
-Each analysis represents an allocation of part (or all) of a document amount.
+The default status is managed only from EasyAdmin.
 
-An analysis contains:
+When a new document is created, MOA automatically assigns the configured default status.
 
-- analysis date;
-- category;
-- one value for each active analysis dimension;
-- signed amount;
+The user can then change the document status normally.
+
+The system must ensure that only one status can be configured as the default.
+
+When a model is applied to a new document, the current status of the new document remains unchanged.
+
+---
+
+### Document Models
+
+Allow an existing document to be used as a reusable model for future document creation.
+
+A model is always a real `Document`.
+
+Marking a document as a model only makes it available as a reusable source during document creation.
+
+It does not change:
+
+- its normal visibility;
+- its financial impact;
+- its analytical data;
+- its presence in document lists;
+- its normal lifecycle.
+
+The `Document` entity should support:
+
+```text
+isModel
+modelName
+```
+
+`modelName` is nullable.
+
+When no explicit model name is provided, the application should use the document display name returned by:
+
+```php
+Document::getDisplayName()
+```
+
+This keeps model creation lightweight while allowing users to provide clearer names when needed.
+
+Examples:
+
+```text
+EDF — Electricity
+Orange — Mobile subscription
+Adobe — Creative Cloud
+Monthly rent
+```
+
+---
+
+### Model Selection
+
+Add an optional model selector to the document creation workflow.
+
+Only documents explicitly marked as models are displayed.
+
+Example:
+
+```text
+Model
+[ EDF — Electricity ▼ ]
+```
+
+Selecting a model initializes the new document using the reusable information of the source document.
+
+The user remains free to modify every copied value before saving.
+
+Selecting a model must never modify the source document.
+
+The status already assigned to the new document must remain unchanged when a model is applied.
+
+---
+
+### Model Copy Rules
+
+Creating a new document from a model must copy reusable business information from the source document.
+
+This includes, where applicable:
+
+- folder;
+- document type;
+- direction;
+- primary third party;
 - currency;
-- optional notes.
+- tags;
+- other reusable document metadata;
+- analysis allocations;
+- analysis dimension assignments;
+- third party entries.
 
-The analysis date is independent from the document issue date.
+The document status is explicitly excluded from model copying.
 
-This allows a single document to allocate amounts across multiple accounting periods.
+The new document keeps its current status, normally initialized from the configured default document status.
+
+Related financial and analytical structures should be recreated as new entities associated with the new document.
+
+They must never remain linked to the source document.
+
+---
+
+### Date Copy Rules
+
+Document dates require specific handling when a model is applied.
+
+`receivedAt` and `issuedAt` are reset to the current date.
+
+Other dates should preserve their relative offset from `issuedAt` in the source model.
+
+For example, if the model contains:
+
+```text
+issuedAt:  2026-08-01
+dueDate:   2026-08-31
+```
+
+and the new document is created on:
+
+```text
+issuedAt:  2026-09-05
+```
+
+the resulting date should initially be:
+
+```text
+dueDate:   2026-10-05
+```
+
+The same principle should apply to other relevant dates linked to the document lifecycle.
+
+In general:
+
+```text
+newDate = newIssuedAt + (modelDate - modelIssuedAt)
+```
+
+This provides useful initial values while keeping them predictable.
+
+All generated dates remain editable by the user before saving.
+
+If a source date is empty, the corresponding date should remain empty unless the normal document creation rules specify otherwise.
+
+---
+
+### Data Not Copied
+
+Occurrence-specific information must not be copied from the source document.
+
+This includes at least:
+
+- document identifier;
+- uploaded file;
+- file metadata specific to the source file;
+- creation metadata;
+- update metadata;
+- model status;
+- model name.
+
+The newly created document must not automatically become a model because its source document is a model.
+
+---
+
+### DocumentModelService
+
+Introduce a dedicated application service:
+
+```php
+DocumentModelService
+```
+
+The service is responsible for applying a document model to a new document.
+
+Its responsibilities should include:
+
+- copying reusable document properties;
+- preserving the current document status;
+- recreating related analysis data;
+- recreating analysis dimension assignments;
+- recreating third party entries;
+- resetting occurrence-specific information;
+- initializing `receivedAt` and `issuedAt`;
+- calculating relative dates from the source model;
+- keeping model-copy logic outside controllers and forms.
+
+Controllers, forms and Twig templates must not contain the business logic used to apply model data.
+
+The service should become the central place for future model-related behavior.
+
+This is especially important because the `Document` domain is still evolving.
+
+Future document properties and relations should be integrated into the model workflow through this service rather than through a parallel template entity.
+
+---
+
+### Model Management
+
+Models remain normal documents and therefore do not require a separate CRUD.
+
+A document can be marked or unmarked as a model.
+
+The model configuration should allow:
+
+- enabling or disabling model status;
+- optionally defining a custom model name.
+
+Initial model management may remain available through EasyAdmin if this keeps the first implementation simple.
+
+A dedicated frontend model management interface is not required for v0.9.
+
+---
+
+### Batch Document Import
+
+Allow users to select or drop multiple files during document import.
+
+Each file creates its own independent `Document`.
 
 Example:
 
 ```text
-Train tickets invoice
+Select 8 files
 
-August travel      -120 €
-September travel   -180 €
+        ↓
+
+8 document entries
+
+        ↓
+
+Qualification workflow
 ```
 
-Analysis answers:
+The existing single-document import must remain available.
 
-> **What does this amount correspond to?**
-
-and
-
-> **Where should it be allocated?**
+Batch import must reuse the existing document creation architecture as much as possible rather than introducing a separate document domain workflow.
 
 ---
 
-### Analysis Dimensions
+### Batch Import and Models
 
-Reuse the existing analytical model:
+Document models should integrate naturally with batch import.
 
-- `AnalysisDimension`
-- `AnalysisDimensionValue`
-- `AnalysisDimensionAssignment`
+The workflow should allow repetitive metadata entry to be reduced when several similar documents are imported together.
 
-Active analysis dimensions are automatically displayed in the analysis form.
-
-Each analysis may reference one value for each active dimension.
-
-Example:
+Potential interactions include:
 
 ```text
-Analysis
-
-Category      Travel
-Project       MOA
-Department    Television
-Amount        -350 €
+Multiple files
+      ↓
+Select model
+      ↓
+Apply reusable information
+      ↓
+Review each document
 ```
 
-Adding a new analysis dimension from EasyAdmin must automatically expose it in the frontend without requiring application code changes.
+or:
 
-`AnalysisDimensionAssignment` remains an implementation detail and is never exposed directly to end users.
+```text
+Multiple files
+      ↓
+Create documents
+      ↓
+Qualify documents individually
+      ↓
+Select a model when appropriate
+```
+
+The exact user interface should be decided during implementation.
+
+The priority is to keep batch import understandable and avoid adding unnecessary complexity.
 
 ---
 
-### Third Party Entries
+## Architecture Principles
 
-Introduce a new entity:
+### Models Are Documents
 
-- `ThirdPartyEntry`
+A document model is not a separate domain entity.
 
-Third-party entries are completely independent from analyses.
+It is a normal document that has been explicitly made reusable.
 
-An analysis answers:
-
-> **Where does the money belong?**
-
-A third-party entry answers:
-
-> **Who owes money to whom?**
-
-Each entry contains:
-
-- entry date;
-- third party;
-- signed amount;
-- currency;
-- optional notes;
-- origin document or origin bank transaction.
-
-Each entry must originate from exactly one source:
-
-```text
-Document XOR BankTransaction
-```
-
-Bank transactions are intentionally excluded from the v0.8 workflow but the data model should already support them.
+This avoids maintaining a parallel representation of document metadata and relations.
 
 ---
 
-### Multiple Third Parties per Document
+### Explicit User Control
 
-The existing `Document.thirdParty` remains the primary third party associated with the document.
+MOA must not automatically decide which model applies to a document.
 
-It represents document metadata only.
+The user explicitly selects a model.
 
-A document may generate multiple `ThirdPartyEntry` records.
-
-Example:
-
-```text
-Payroll summary
-
-Primary third party
-Payroll provider
-
-Third-party entries
-
-Employee A      -2 000 €
-Employee B      -2 100 €
-URSSAF          -1 800 €
-Audiens           -700 €
-```
-
-Another example:
-
-```text
-Expense report
-
-Primary third party
-Employee
-
-Third-party entries
-
-Employee          -245 €
-```
-
-This separates document metadata from financial positions.
+Automatic model recognition is outside the scope of v0.9.
 
 ---
 
-### Third Party Position
+### Reusable Defaults
 
-The financial position of a third party is calculated exclusively from `ThirdPartyEntry`.
+Model values are starting values.
 
-It is never calculated from analyses.
+They must remain editable.
 
-Sign convention:
+A document created from a model becomes completely independent from the source model.
 
-```text
-Positive amount
-
-The third party owes money to us.
-
-Negative amount
-
-We owe money to the third party.
-```
-
-Example:
-
-```text
-Customer invoice
-
-Customer        +5 000 €
-
-Receivable      +5 000 €
-```
-
-```text
-Supplier invoice
-
-Supplier          -500 €
-
-Payable           -500 €
-```
-
-Future bank transaction entries will allow positions to be settled:
-
-```text
-Supplier invoice      -500 €
-Bank payment          +500 €
-----------------------------
-Current position         0 €
-```
-
-Settlement itself is outside the scope of v0.8.
+Changing the source model later must never modify previously created documents.
 
 ---
 
-### Document Analysis Workflow
+### Status Independence
 
-Extend the existing document edit screen with a dedicated financial analysis section.
+Document status is not part of the model data.
 
-Users should be able to:
+New documents receive their status through the normal document creation workflow, including the configured default status.
 
-- view analyses;
-- create analyses;
-- edit analyses;
-- delete analyses;
-- assign categories;
-- assign analysis dimensions.
-
-The interface should later expose:
-
-- document amount;
-- allocated amount;
-- remaining amount;
-- allocation percentage.
-
-These indicators are informational only.
-
-Analysis amounts are intentionally **not** limited by the document amount.
+Applying a model must never replace the current document status.
 
 ---
 
-### Document Third Party Workflow
+### Relative Dates
 
-Extend the document edit screen with a dedicated third-party position section.
+Models provide date patterns rather than absolute dates.
 
-Users should be able to:
+`receivedAt` and `issuedAt` are initialized using the current date.
 
-- view third-party entries;
-- create third-party entries;
-- edit third-party entries;
-- delete third-party entries;
-- assign a third party;
-- assign an entry date;
-- assign a signed amount.
+Other relevant dates preserve their relative offset from the model's `issuedAt`.
 
-The document primary third party and its financial entries remain independent concepts.
+This allows recurring documents to inherit useful date relationships without copying obsolete absolute dates.
 
 ---
 
-### Document Browsing
+### Centralized Model Logic
 
-Improve the document list for daily use.
+Model-copy behavior belongs in `DocumentModelService`.
 
-Introduce:
+The service must remain independent from the presentation layer.
 
-- pagination;
-- search;
-- useful filters;
-- persistent filters;
-- number of matching documents;
-- cumulative displayed amount.
-
-The footer should display aggregated totals for the current result set.
+Future changes to the `Document` domain should require changes primarily in this service rather than duplicated logic across controllers, forms or templates.
 
 ---
 
-### Category Summary
+### Preserve Existing Workflows
 
-Introduce the first analytical dashboard for categories.
+Existing document creation and import workflows must continue to work without using models.
 
-Display:
+Models are an optional productivity feature.
 
-- allocated amount;
-- number of related documents.
-
-Example:
-
-```text
-Hosting             -520 €
-Travel            -1 240 €
-Payroll          -25 600 €
-Revenue          +18 500 €
-```
-
-No drill-down is required.
-
----
-
-### Analysis Dimension Summary
-
-Introduce summary pages for every analysis dimension.
-
-Display the cumulative amount allocated to every dimension value.
-
-Example:
-
-```text
-Project
-
-MOA              -4 200 €
-Internal           -980 €
-Client A        +8 150 €
-```
-
-Every future analysis dimension must automatically be supported.
-
----
-
-### Third Party Summary
-
-Introduce a summary page for third-party financial positions.
-
-Display:
-
-- current position;
-- number of related documents.
-
-Example:
-
-```text
-EDF             -1 250 €
-Amazon            -890 €
-URSSAF         -12 450 €
-Client A       +8 500 €
-```
-
-The summary is calculated exclusively from `ThirdPartyEntry`.
-
----
-
-## Architecture
-
-Reuse the existing financial domain as much as possible.
-
-Continue relying on:
-
-- `Document`
-- `Analysis`
-- `Category`
-- `AnalysisDimension`
-- `AnalysisDimensionValue`
-- `AnalysisDimensionAssignment`
-- `ThirdParty`
-
-Introduce:
-
-- `ThirdPartyEntry`
-
-The resulting model becomes:
-
-```text
-Document
-├── ThirdParty
-│   └── Primary document third party
-│
-├── Analysis[]
-│   ├── AnalysisDate
-│   ├── Category
-│   ├── Amount
-│   ├── Currency
-│   └── AnalysisDimensionAssignment[]
-│       └── AnalysisDimensionValue
-│
-└── ThirdPartyEntry[]
-    ├── ThirdParty
-    ├── EntryDate
-    ├── Amount
-    └── Currency
-```
-
-Future versions will extend the model with:
-
-```text
-BankTransaction
-└── ThirdPartyEntry[]
-```
-
-while preserving the invariant:
-
-```text
-ThirdPartyEntry
-Document XOR BankTransaction
-```
-
-Business rules belong in services.
-
-Repositories provide aggregated data.
-
-Twig remains responsible only for presentation.
+Batch import must complement rather than replace single-document import.
 
 ---
 
 ## Non Goals
 
-This version deliberately excludes:
+v0.9 deliberately excludes:
 
-- double-entry accounting;
-- chart of accounts;
-- accounting journals;
-- debit / credit entries;
-- general ledger;
-- bank reconciliation;
-- payment matching;
-- payment tracking;
-- settlement workflow;
-- currency conversion.
+- OCR-based classification;
+- automatic model recognition;
+- automatic third-party recognition;
+- automatic analytical classification;
+- AI-assisted classification;
+- email ingestion;
+- watched folders;
+- scheduled imports;
+- background document ingestion;
+- automatic document matching;
+- recurring document generation.
 
-These features belong to future releases.
+These features may be considered in later versions.
+
+---
+
+## Suggested Implementation Order
+
+### Phase 1 — Default Status
+
+- Add default status support.
+- Configure it through EasyAdmin.
+- Apply it during normal document creation.
+- Ensure only one status can be the default.
+
+### Phase 2 — Document Model Metadata
+
+- Add `isModel`.
+- Add nullable `modelName`.
+- Use `getDisplayName()` when `modelName` is empty.
+- Allow model configuration through EasyAdmin.
+- Ensure marking a document as a model does not affect its normal behavior.
+
+### Phase 3 — DocumentModelService
+
+- Introduce `DocumentModelService`.
+- Copy reusable document fields.
+- Preserve the current document status.
+- Reset occurrence-specific fields.
+- Reset `receivedAt` and `issuedAt` to the current date.
+- Calculate other dates using their relative offset from the model's `issuedAt`.
+- Recreate analysis allocations.
+- Recreate analysis dimension assignments.
+- Recreate third party entries.
+
+### Phase 4 — Model Selection
+
+- Add model selection to document creation.
+- Display only documents explicitly marked as models.
+- Use `modelName` or fall back to `getDisplayName()`.
+- Apply the selected model through `DocumentModelService`.
+- Keep all copied values editable.
+- Validate the workflow with recurring real-world documents.
+
+### Phase 5 — Batch Import
+
+- Allow multiple files to be selected or dropped.
+- Create independent documents for every file.
+- Reuse the existing document creation workflow.
+- Integrate document models where useful.
+- Preserve single-document import behavior.
 
 ---
 
 ## Completion Criteria
 
-v0.8 can be considered complete when:
+v0.9 can be considered complete when:
 
-- analyses support their own accounting date;
-- analyses support their own currency;
-- a document supports multiple analyses;
-- analyses support dynamic analysis dimensions;
-- dynamic dimensions automatically appear in the frontend;
-- analyses can be created, edited and deleted;
-- a document supports multiple third-party entries;
-- third-party entries support date, amount, currency and third party;
-- third-party entries support the `Document XOR BankTransaction` model;
-- third-party positions are calculated independently from analyses;
-- document editing provides complete analysis and third-party workflows;
-- the document list supports pagination, search and filtering;
-- cumulative totals are displayed in the document list;
-- category summaries display analytical totals;
-- analysis dimension summaries display analytical totals;
-- third-party summaries display financial positions;
-- existing document workflows remain fully compatible;
+- one status can be configured as the default;
+- new documents automatically receive the configured default status;
+- applying a model does not change the current document status;
+- an existing document can be marked as a model;
+- a model can optionally have a custom name;
+- `getDisplayName()` is used when no model name is defined;
+- only documents marked as models appear in the model selector;
+- marking a document as a model does not change its normal document behavior;
+- a model can be selected during document creation;
+- reusable document information is copied to the new document;
+- analysis allocations are recreated for the new document;
+- analysis dimension assignments are recreated for the new document;
+- third party entries are recreated for the new document;
+- source files and source identifiers are never copied;
+- `receivedAt` and `issuedAt` are initialized with the current date;
+- other relevant dates preserve their relative offset from the model's `issuedAt`;
+- copied and calculated values remain editable;
+- the newly created document does not automatically become a model;
+- the source model remains unchanged;
+- previously created documents remain independent from their model;
+- multiple files can be imported in a single operation;
+- every imported file creates an independent document;
+- existing single-document creation continues to work;
+- existing document lists, totals and analyses remain unchanged;
 - EasyAdmin remains compatible with the updated domain model.
+
 ---
 
 # Architecture Roadmap
@@ -487,16 +518,16 @@ Introduce a new root entity:
 
 Every business entity will eventually belong to a Workspace, including:
 
-- Users
-- Documents
-- Folders
-- Tags
-- Categories
-- Projects
-- Third Parties
-- Bank Accounts
-- Analysis
-- Settlement Entries
+- Users;
+- Documents;
+- Folders;
+- Tags;
+- Categories;
+- Projects;
+- Third Parties;
+- Bank Accounts;
+- Analysis;
+- Third Party Entries.
 
 The Workspace context should be resolved once during the request lifecycle and automatically applied by repositories and services.
 
@@ -523,355 +554,8 @@ Those features belong to future releases.
 
 This architectural milestone can be considered complete when:
 
-- A `Workspace` entity exists.
-- Existing data belongs to a Workspace.
-- The Workspace is resolved automatically for every request.
-- Repository queries are Workspace-aware.
-- A self-hosted installation continues to behave exactly as before using a single default Workspace.
-
----
-
-# Roadmap
-# v0.9 — Third Party Settlement Engine
-
-**Status:** Planning
-
-## Goal
-
-Introduce the settlement engine that connects documents, third parties and bank transactions.
-
-This version establishes the financial workflow that allows MOA to answer one fundamental question:
-
-> **Who owes money to whom?**
-
-Documents generate receivables or payables for one or more third parties.
-
-Bank transactions settle these receivables and payables.
-
-This version introduces the settlement domain without implementing a full double-entry accounting system.
-
----
-
-## Scope
-
-### Third Party Settlement
-
-Introduce a new settlement layer independent from document analysis.
-
-Create a new entity:
-
-- `ThirdPartyEntry`
-
-Each entry represents a receivable or payable towards a single third party.
-
-A settlement entry may originate from:
-
-- a document;
-- a bank transaction.
-
-A settlement entry must never originate from both simultaneously.
-
----
-
-### Multiple Third Parties per Document
-
-A single document may generate multiple receivables or payables.
-
-This makes it possible to model documents such as:
-
-- payroll summaries;
-- expense reports;
-- tax declarations;
-- grouped invoices.
-
-Examples:
-
-```text
-Payroll Summary
-
-→ Employee A
-→ Employee B
-→ URSSAF
-→ Audiens
-→ AFDAS
-→ Tax Administration
-```
-
-```text
-Expense Report
-
-Restaurant receipt
-→ Employee
-
-Taxi receipt
-→ Employee
-
-Hotel invoice
-→ Employee
-```
-
-```text
-Supplier Invoice
-
-Supplier invoice
-→ Supplier
-```
-
-The document remains a single business document while settlement is performed independently for every concerned third party.
-
----
-
-### Third Party Balance
-
-The balance of every third party is calculated from settlement entries.
-
-Examples:
-
-```text
-Supplier
-
-Invoice      -500 €
-Payment      +500 €
-
-Balance         0 €
-```
-
-```text
-Employee
-
-Expense claim   -200 €
-Reimbursement   +200 €
-
-Balance           0 €
-```
-
-Future versions may expose these balances through dedicated dashboards and reports.
-
----
-
-### Settlement from Bank Transactions
-
-Bank transactions also create settlement entries.
-
-This allows settlement to become independent from analytical allocation.
-
-A payment may settle:
-
-- one document;
-- multiple documents;
-- part of a document;
-- multiple third parties.
-
-The existing `DocumentTransaction` reconciliation mechanism remains available.
-
-Settlement and document reconciliation represent two different business concepts.
-
----
-
-### Relationship with Analysis
-
-Analysis answers:
-
-> **Where does the money belong?**
-
-Settlement answers:
-
-> **Who should receive or pay the money?**
-
-These two domains remain completely independent.
-
-Examples:
-
-```text
-Supplier Invoice
-
-Settlement
-→ Supplier
-
-Analysis
-→ Purchases
-→ Project MOA
-```
-
-```text
-Expense Receipt
-
-Settlement
-→ Employee
-
-Analysis
-→ Travel
-→ Client Project
-```
-
----
-
-## Architecture
-
-Introduce the settlement domain without transforming MOA into a complete accounting application.
-
-Reuse the existing `ThirdParty` entity.
-
-Avoid introducing accounting journals, debit/credit entries or general ledger accounts.
-
-The settlement layer must remain lightweight while supporting:
-
-- supplier invoices;
-- customer invoices;
-- expense reports;
-- payroll summaries;
-- tax and social declarations;
-- partial payments;
-- grouped payments.
-
-Business rules belong in dedicated services rather than controllers or Twig templates.
-
----
-
-## Completion Criteria
-
-v0.8 can be considered complete when:
-
-- `ThirdPartyEntry` has been implemented.
-- A document can generate multiple settlement entries.
-- A bank transaction can generate settlement entries.
-- Third party balances can be calculated.
-- Settlement and document reconciliation remain independent.
-- Existing `DocumentTransaction` reconciliation continues to work.
-- Analysis continues to work independently from settlement.
-- Existing document workflows remain compatible.
-- EasyAdmin supports the new settlement entities.
-
----
-
-# v0.9 — Document Analysis & Browsing
-
-**Status:** Planning
-
-## Goal
-
-Improve the daily document workflow by making the document list scalable and searchable, and introduce the first analytical allocation of document amounts.
-
-This version focuses on two complementary areas:
-
-- navigating and analysing the document collection;
-- allocating document amounts to categories and projects.
-
-## Scope
-
-### Document List
-
-Improve the existing user-facing document list so that it remains practical as the number of documents grows.
-
-Planned features:
-
-- Paginated document list.
-- Search by relevant document information.
-- First document filters.
-- Preserve filters and search while navigating between result pages.
-- Display the number of matching documents.
-- Add a summary area below the list.
-- Display the cumulative amount of matching documents.
-- Keep monetary aggregation consistent with the current single-currency model.
-
-The existing `DataTable` component should be extended only when concrete reusable needs emerge.
-
-Pagination, filters, search and statistics should remain composable concerns rather than being embedded into one oversized generic table component.
-
-### Document Analysis
-
-Introduce the first user-facing analytical allocation workflow.
-
-A document amount can be distributed across one or more analysis lines.
-
-Each allocation may reference:
-
-- a category;
-- a project;
-- an amount;
-- optional notes.
-
-The sum of the allocations should be comparable to the document amount.
-
-The interface should make it easy to understand:
-
-- the document total;
-- the amount already allocated;
-- the amount remaining to allocate.
-
-### Categories
-
-Use the existing hierarchical `Category` model.
-
-Categories represent the nature of income or expense.
-
-Examples:
-
-- Revenue
-- Purchases
-- Travel
-- Software
-- Bank fees
-
-Category hierarchy remains available for future consolidated reporting.
-
-### Projects
-
-Use the existing hierarchical `Project` model as the first analytical axis.
-
-Projects represent where income or expenses should be attributed.
-
-Examples:
-
-- MOA
-- Television production
-- Internal administration
-- Client project
-
-The model should remain compatible with future analytical dimensions without attempting to expose every possible axis in v0.8.
-
-### Document Edit
-
-Extend the current document edit workflow with an analysis section.
-
-The existing document metadata and PDF preview remain unchanged.
-
-The analysis area should allow the user to:
-
-- view existing allocations;
-- add an allocation;
-- edit an allocation;
-- remove an allocation;
-- see allocated and remaining amounts.
-
-Do not turn the document form into one large monolithic form if a dedicated analysis component or workflow provides a clearer interface.
-
-## Architecture
-
-Reuse the existing financial core introduced before v0.7.
-
-Do not create parallel entities or services when the existing `Analysis`, `Category` and `Project` domain can be extended.
-
-Business rules belong in services and domain validation, not in Twig.
-
-Document list queries, filtering, pagination and aggregation should be handled by repositories or dedicated query services rather than Twig.
-
-Monetary totals must use the existing money conventions and services.
-
-## Completion Criteria
-
-v0.8 can be considered complete when:
-
-- The document list is paginated.
-- Documents can be searched from the frontend.
-- At least the first useful document filters are available.
-- Search and filters work together with pagination.
-- The list displays the number of matching documents.
-- The list displays the cumulative amount of matching documents.
-- A document can contain analytical allocations.
-- Allocations can reference a category and a project.
-- Allocations can be added, edited and removed from the frontend.
-- Allocated and remaining amounts are clearly visible.
-- Business rules prevent inconsistent analytical allocations.
-- Existing document import, view and edit workflows remain functional.
-- EasyAdmin remains compatible with the underlying domain.
+- a `Workspace` entity exists;
+- existing data belongs to a Workspace;
+- the Workspace is resolved automatically for every request;
+- repository queries are Workspace-aware;
+- a self-hosted installation continues to behave exactly as before using a single default Workspace.
