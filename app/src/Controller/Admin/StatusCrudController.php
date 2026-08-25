@@ -4,10 +4,16 @@ namespace App\Controller\Admin;
 
 use App\Service\StatusService;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use App\Entity\Status;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ColorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
@@ -28,9 +34,6 @@ final class StatusCrudController extends BaseCrudController
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
-            ->setDefaultSort([
-                'name' => 'ASC',
-            ])
             ->setSearchFields([
                 'name',
                 'notes',
@@ -46,7 +49,10 @@ final class StatusCrudController extends BaseCrudController
     public function configureFields(string $pageName): iterable
     {
         yield TextField::new('name', 'Name')
-            ->onlyOnIndex();
+            ->setRequired(true);
+
+        yield BooleanField::new('isDefault', 'Default')
+            ->renderAsSwitch(false);
 
         yield TextField::new('effectiveFaIcon', 'Icon')
             ->formatValue(
@@ -97,6 +103,24 @@ final class StatusCrudController extends BaseCrudController
             ->renderAsHtml()
             ->onlyOnIndex();
 
+        yield ColorField::new('color', 'Color')
+            ->onlyOnForms();
+
+        yield TextField::new('color', 'Color')
+            ->onlyOnDetail();
+
+        yield TextField::new('faIcon', 'Font Awesome icon')
+            ->setHelp(
+                '<a href="https://fontawesome.com/search?ic=free" target="_blank" rel="noopener noreferrer">
+                Browse free Font Awesome icons
+            </a>'
+            )
+            ->renderAsHtml()
+            ->onlyOnForms();
+
+        yield TextField::new('faIcon', 'faIcon')
+            ->onlyOnDetail();
+
         yield TextField::new('notes', 'Notes')
             ->formatValue(
                 static fn (?string $value): string => $value ?: '—'
@@ -104,47 +128,30 @@ final class StatusCrudController extends BaseCrudController
             ->setMaxLength(40)
             ->onlyOnIndex();
 
-        yield IntegerField::new('documentCount', 'Documents')
-            ->onlyOnIndex();
-
-        yield TextField::new('name', 'Name')
-            ->setRequired(true)
-            ->onlyOnForms();
-
-        yield ColorField::new('color', 'Color')
-            ->onlyOnForms();
-
-        yield TextField::new('faIcon', 'Font Awesome icon')
-            ->setHelp(
-                '<a href="https://fontawesome.com/search?ic=free" target="_blank" rel="noopener noreferrer">
-                    Browse free Font Awesome icons
-                </a>'
-            )
-            ->renderAsHtml()
-            ->onlyOnForms();
-
         yield TextareaField::new('notes', 'Notes')
-            ->onlyOnForms();
+            ->hideOnIndex();
 
-        // Details
+        yield IntegerField::new('documentCount', 'Documents')
+            ->hideOnForm();
 
         yield TextField::new('id', 'UUID')
             ->onlyOnDetail();
+    }
 
-        yield TextField::new('name', 'Name')
-            ->onlyOnDetail();
-
-        yield TextField::new('faIcon', 'faIcon')
-            ->onlyOnDetail();
-
-        yield TextField::new('color', 'Color')
-            ->onlyOnDetail();
-
-        yield TextareaField::new('notes', 'Notes')
-            ->onlyOnDetail();
-
-        yield IntegerField::new('documentCount', 'Documents')
-            ->onlyOnDetail();
+    public function createIndexQueryBuilder(
+        SearchDto $searchDto,
+        EntityDto $entityDto,
+        FieldCollection $fields,
+        FilterCollection $filters,
+    ): QueryBuilder {
+        return parent::createIndexQueryBuilder(
+            $searchDto,
+            $entityDto,
+            $fields,
+            $filters,
+        )
+            ->addOrderBy('entity.isDefault', 'DESC')
+            ->addOrderBy('entity.name', 'ASC');
     }
 
     public function persistEntity(

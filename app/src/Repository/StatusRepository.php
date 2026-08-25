@@ -42,4 +42,11 @@ class StatusRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findDefault(): ?Status
+    {
+        return $this->findOneBy([
+            'isDefault' => true,
+        ]);
+    }
 }

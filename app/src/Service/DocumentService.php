@@ -12,7 +12,14 @@ final readonly class DocumentService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DocumentTransactionRepository $documentTransactionRepository,
+        private StatusService $statusService,
     ) {
+    }
+
+    public function create(): Document
+    {
+        return (new Document())
+            ->setStatus($this->statusService->getDefault());
     }
 
     public function save(Document $document): void

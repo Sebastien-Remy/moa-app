@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 use App\DTO\DocumentImportData;
-use App\Entity\Document;
 use App\Form\Data\DocumentImportFormData;
 use App\Form\DocumentImportType;
+use App\Service\DocumentService;
 use App\Service\DocumentStorageService;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +17,7 @@ final class DocumentImportController extends BaseController
     #[Route('/import/document', name: 'app_document_import')]
     public function import(
         Request $request,
+        DocumentService $documentService,
         DocumentStorageService $documentStorageService,
     ): Response {
         $formData = new DocumentImportFormData();
@@ -42,7 +43,7 @@ final class DocumentImportController extends BaseController
                 originalFilename: $uploadedFile->getClientOriginalName(),
             );
 
-            $document = new Document();
+            $document = $documentService->create();
 
             $document->setReference(
                 pathinfo(

@@ -13,6 +13,11 @@ use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: StatusRepository::class)]
+#[ORM\Index(
+    name: 'idx_status_is_default',
+    columns: ['is_default'],
+)]
+
 #[NormalizedUnique(
     field: 'name',
     message: 'A status with this name already exists.'
@@ -45,6 +50,10 @@ class Status
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $isDefault = false;
+
 
     /**
      * @var Collection<int, Document>
@@ -118,6 +127,18 @@ class Status
     {
         $notes = $notes !== null ? trim($notes) : null;
         $this->notes = $notes !== '' ? $notes : null;
+
+        return $this;
+    }
+
+    public function isDefault(): bool
+    {
+        return $this->isDefault;
+    }
+
+    public function setIsDefault(bool $isDefault): static
+    {
+        $this->isDefault = $isDefault;
 
         return $this;
     }

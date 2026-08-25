@@ -40,6 +40,11 @@ final class DocumentCrudController extends BaseCrudController
         return Document::class;
     }
 
+    public function createEntity(string $entityFqcn): Document
+    {
+        return $this->documentService->create();
+    }
+
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
