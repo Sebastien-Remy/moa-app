@@ -32,7 +32,7 @@ final class DocumentController extends BaseController
         MoneyFormatter $moneyFormatter,
     ): Response {
         $page = max(1, $request->query->getInt('page', 1));
-        $perPage = 5;
+        $perPage = 25;
 
         $folder = $request->query->getString('folder');
         $status = $request->query->getString('status');
