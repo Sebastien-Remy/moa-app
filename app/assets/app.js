@@ -23,11 +23,16 @@ dropzones.forEach((dropzone) => {
     }
 
     const updateFilename = () => {
-        const file = input.files?.[0];
+        const files = input.files;
 
-        filename.textContent = file
-            ? file.name
-            : 'PDF files only.';
+        if (!files || files.length === 0) {
+            filename.textContent = 'PDF files only.';
+            return;
+        }
+
+        filename.textContent = files.length === 1
+            ? files[0].name
+            : `${files.length} PDF documents selected.`;
     };
 
     input.addEventListener('change', updateFilename);
@@ -51,15 +56,20 @@ dropzones.forEach((dropzone) => {
             return;
         }
 
-        const file = files[0];
+        const pdfFiles = Array.from(files).filter(
+            (file) => file.type === 'application/pdf',
+        );
 
-        if (file.type !== 'application/pdf') {
-            filename.textContent = 'Please select a PDF document.';
+        if (pdfFiles.length !== files.length) {
+            filename.textContent = 'Please select PDF documents only.';
             return;
         }
 
         const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
+
+        pdfFiles.forEach((file) => {
+            dataTransfer.items.add(file);
+        });
 
         input.files = dataTransfer.files;
 
@@ -68,5 +78,46 @@ dropzones.forEach((dropzone) => {
                 bubbles: true,
             }),
         );
+    });
+});
+
+const importForms = document.querySelectorAll(
+    '[data-document-import-form]',
+);
+
+importForms.forEach((form) => {
+    if (!(form instanceof HTMLFormElement)) {
+        return;
+    }
+
+    const submitButton = form.querySelector(
+        '[data-document-import-submit]',
+    );
+
+    if (!(submitButton instanceof HTMLButtonElement)) {
+        return;
+    }
+    form.addEventListener('submit', (event) => {
+        if (!form.checkValidity()) {
+            return;
+        }
+
+        event.preventDefault();
+
+        submitButton.disabled = true;
+
+        submitButton.innerHTML = `
+        <span
+            class="spinner-border spinner-border-sm me-2"
+            aria-hidden="true"
+        ></span>
+        Importing…
+    `;
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                form.submit();
+            });
+        });
     });
 });

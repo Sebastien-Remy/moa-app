@@ -25,11 +25,15 @@
                 <div class="card shadow-sm">
                     <div class="card-body p-4">
 
-                        {{ form_start(form) }}
+                        {{ form_start(form, {
+                            attr: {
+                                'data-document-import-form': ''
+                            }
+                        }) }}
 
                         <twig:DocumentDropZone
 
-                            :field="form.uploadedFile"
+                            :field="form.uploadedFiles"
 
                         />
 

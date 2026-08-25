@@ -6,7 +6,13 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class DocumentImportFormData
 {
-    public ?UploadedFile $uploadedFile = null;
+    /**
+
+     * @var list<UploadedFile>
+
+     */
+
+    public array $uploadedFiles = [];
 
     public ?\DateTimeImmutable $receivedAt = null;
 }

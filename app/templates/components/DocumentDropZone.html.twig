@@ -7,7 +7,7 @@
     </div>
 
     <div class="document-dropzone__title">
-        Drag & drop a PDF document here
+        Drag & drop PDF documents here
     </div>
 
     <div class="document-dropzone__separator">
@@ -18,7 +18,7 @@
         for="{{ field.vars.id }}"
         class="btn btn-outline-primary"
     >
-        Choose a PDF document
+        Choose PDF documents
     </label>
 
     <div
@@ -32,7 +32,8 @@
         {{ form_widget(field, {
             attr: {
                 'data-document-dropzone-input': '',
-                'accept': 'application/pdf'
+                'accept': 'application/pdf',
+                'multiple': 'multiple'
             }
         }) }}
     </div>

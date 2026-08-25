@@ -30,44 +30,57 @@ final class DocumentImportController extends BaseController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $uploadedFile = $formData->uploadedFile;
+            $uploadedFiles = $formData->uploadedFiles;
 
-            if (!$uploadedFile instanceof UploadedFile) {
+            if ($uploadedFiles === []) {
                 throw new \LogicException(
-                    'A PDF file is required.',
+                    'At least one PDF file is required.',
                 );
             }
 
-            $importData = new DocumentImportData(
-                sourcePath: $uploadedFile->getPathname(),
-                originalFilename: $uploadedFile->getClientOriginalName(),
-            );
+            $importedCount = 0;
 
-            $document = $documentService->create();
+            foreach ($uploadedFiles as $uploadedFile) {
+                if (!$uploadedFile instanceof UploadedFile) {
+                    throw new \LogicException(
+                        'Each imported file must be a valid PDF upload.',
+                    );
+                }
 
-            $document->setReference(
-                pathinfo(
-                    $importData->originalFilename,
-                    PATHINFO_FILENAME,
-                ),
-            );
+                $importData = new DocumentImportData(
+                    sourcePath: $uploadedFile->getPathname(),
+                    originalFilename: $uploadedFile->getClientOriginalName(),
+                );
 
-            $documentStorageService->storeFromSource(
-                document: $document,
-                sourcePath: $importData->sourcePath,
-                originalFilename: $importData->originalFilename,
-            );
+                $document = $documentService->create();
+
+                $document->setReference(
+                    pathinfo(
+                        $importData->originalFilename,
+                        PATHINFO_FILENAME,
+                    ),
+                );
+
+                $documentStorageService->storeFromSource(
+                    document: $document,
+                    sourcePath: $importData->sourcePath,
+                    originalFilename: $importData->originalFilename,
+                );
+
+                ++$importedCount;
+            }
 
             $this->addFlash(
                 'success',
-                'Document imported successfully.',
+                sprintf(
+                    '%d document%s imported successfully.',
+                    $importedCount,
+                    $importedCount > 1 ? 's' : '',
+                ),
             );
 
             return $this->redirectToRoute(
-                'app_document_edit',
-                [
-                    'id' => (string) $document->getId(),
-                ],
+                'app_document_index',
             );
         }
 

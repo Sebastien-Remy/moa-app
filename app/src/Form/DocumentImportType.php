@@ -7,7 +7,9 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\Count;
 
 /**
  * @extends AbstractType<DocumentImportFormData>
@@ -18,16 +20,23 @@ final class DocumentImportType extends AbstractType
         FormBuilderInterface $builder,
         array $options,
     ): void {
-        $builder->add('uploadedFile', FileType::class, [
-            'label' => 'PDF document',
+        $builder->add('uploadedFiles', FileType::class, [
+            'label' => 'PDF documents',
+            'multiple' => true,
             'constraints' => [
-                new File(
-                    maxSize: '20M',
-                    mimeTypes: [
-                        'application/pdf',
-                    ],
-                    mimeTypesMessage: 'Please select a PDF document.',
+                new Count(
+                    min: 1,
+                    minMessage: 'Please select at least one PDF document.',
                 ),
+                new All([
+                    new File(
+                        maxSize: '20M',
+                        mimeTypes: [
+                            'application/pdf',
+                        ],
+                        mimeTypesMessage: 'Please select PDF documents only.',
+                    ),
+                ]),
             ],
         ]);
     }
