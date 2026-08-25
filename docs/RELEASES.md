@@ -1,6 +1,39 @@
 # Releases
 
-# Releases
+## v0.9.0 — Assisted Document Entry
+
+Released
+
+### Summary
+
+v0.9 improves document entry in MOA by reducing repetitive work and making recurring and batch document imports faster.
+
+This release introduces configurable default document status, reusable document models and batch file import.
+
+### Added
+
+- Configurable default document status.
+- Default status management from EasyAdmin.
+- Automatic default status assignment to new documents.
+- Reusable document models based on existing documents.
+- Model application during document creation.
+- Batch document import.
+- Multiple file selection and import.
+- Assisted creation of multiple documents from uploaded files.
+
+### Changed
+
+- Improved document creation workflow.
+- Reduced repetitive data entry for recurring documents.
+- Document models preserve the current status of newly created documents.
+- Default status configuration ensures that only one status can be configured as default.
+
+### Result
+
+MOA now provides a faster and more efficient document entry workflow.
+
+Recurring documents can reuse existing metadata, multiple files can be imported in a single operation, and new documents automatically receive the configured default status.
+
 
 ## v0.8.0 — Financial Analysis Workflow
 
@@ -24,7 +57,7 @@ Documents can now be searched, filtered and analyzed directly from the workspace
 - Third-party entries.
 - Category summary page.
 - Analysis dimension summary page.
-- Third-party summary page.
+- Third-party summary page.a
 - Financial totals and allocation summaries.
 
 ### Result
