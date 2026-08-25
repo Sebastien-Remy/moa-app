@@ -1,6 +1,6 @@
 # v0.9 — Assisted Document Entry
 
-**Status:** Planning
+**Status:** Completed
 
 ## Goal
 
@@ -10,7 +10,7 @@ This version introduces three complementary improvements:
 
 - configurable default document status;
 - reusable document models based on existing documents;
-- batch file import.
+- batch PDF import.
 
 The objective is to accelerate document entry while keeping the workflow explicit, predictable and fully controlled by the user.
 
@@ -22,25 +22,25 @@ The objective is to accelerate document entry while keeping the workflow explici
 
 Allow one `Status` to be configured as the default status for newly created documents.
 
-The default status is managed only from EasyAdmin.
+The default status is managed from EasyAdmin.
 
 When a new document is created, MOA automatically assigns the configured default status.
 
 The user can then change the document status normally.
 
-The system must ensure that only one status can be configured as the default.
+The system ensures that only one status can be configured as the default.
 
-When a model is applied to a new document, the current status of the new document remains unchanged.
+When a model is applied to a document, the current status of the target document remains unchanged.
 
 ---
 
 ### Document Models
 
-Allow an existing document to be used as a reusable model for future document creation.
+Allow an existing document to be used as a reusable model for future document entry.
 
 A model is always a real `Document`.
 
-Marking a document as a model only makes it available as a reusable source during document creation.
+Marking a document as a model only makes it available as a reusable source.
 
 It does not change:
 
@@ -50,7 +50,7 @@ It does not change:
 - its presence in document lists;
 - its normal lifecycle.
 
-The `Document` entity should support:
+The `Document` entity supports:
 
 ```text
 isModel
@@ -59,13 +59,21 @@ modelName
 
 `modelName` is nullable.
 
-When no explicit model name is provided, the application should use the document display name returned by:
+The application exposes:
+
+```php
+Document::getModelDisplayName()
+```
+
+When an explicit `modelName` exists, it is used.
+
+Otherwise, `getModelDisplayName()` falls back to:
 
 ```php
 Document::getDisplayName()
 ```
 
-This keeps model creation lightweight while allowing users to provide clearer names when needed.
+This keeps model creation lightweight while allowing users to provide clearer reusable names.
 
 Examples:
 
@@ -78,32 +86,60 @@ Monthly rent
 
 ---
 
+### Model Management
+
+Models remain normal documents and therefore do not require a separate CRUD or separate domain entity.
+
+A document can be marked or unmarked as a model.
+
+Model configuration is available through:
+
+- EasyAdmin;
+- the frontend document edit form.
+
+The configuration allows:
+
+- enabling or disabling model status;
+- optionally defining a custom model name.
+
+A dedicated model management interface is not required.
+
+---
+
 ### Model Selection
 
-Add an optional model selector to the document creation workflow.
+Model selection is available from the frontend document edit workflow.
 
-Only documents explicitly marked as models are displayed.
+Only documents explicitly marked as models are displayed in the model selector.
 
 Example:
 
 ```text
-Model
-[ EDF — Electricity ▼ ]
+Document model
+
+[ EDF — Electricity ▼ ] [ Apply ]
 ```
 
-Selecting a model initializes the new document using the reusable information of the source document.
+The model selector uses `getModelDisplayName()`.
 
-The user remains free to modify every copied value before saving.
+Applying a model initializes the target document using reusable information from the source document.
 
-Selecting a model must never modify the source document.
+The user remains free to modify every copied value afterward.
 
-The status already assigned to the new document must remain unchanged when a model is applied.
+Applying a model:
+
+- never modifies the source document;
+- never changes the current status of the target document;
+- never turns the target document into a model;
+- never creates a persistent dependency between the target and source documents.
+
+The model is applied through an explicit POST action protected by CSRF validation.
 
 ---
 
 ### Model Copy Rules
 
-Creating a new document from a model must copy reusable business information from the source document.
+Applying a model copies reusable business information from the source document.
 
 This includes, where applicable:
 
@@ -111,51 +147,38 @@ This includes, where applicable:
 - document type;
 - direction;
 - primary third party;
+- total amount;
 - currency;
 - tags;
-- other reusable document metadata;
+- notes;
+- validity dates;
 - analysis allocations;
 - analysis dimension assignments;
 - third party entries.
 
+Existing reusable collections on the target document are replaced by those from the selected model where appropriate.
+
+Related financial and analytical structures are recreated as new entities associated with the target document.
+
+They never remain linked to the corresponding entities belonging to the source document.
+
 The document status is explicitly excluded from model copying.
 
-The new document keeps its current status, normally initialized from the configured default document status.
-
-Related financial and analytical structures should be recreated as new entities associated with the new document.
-
-They must never remain linked to the source document.
+The target document keeps its current status, normally initialized from the configured default document status.
 
 ---
 
 ### Date Copy Rules
 
-Document dates require specific handling when a model is applied.
+Document models provide reusable date patterns rather than blindly copying obsolete absolute dates.
 
-`receivedAt` and `issuedAt` are reset to the current date.
-
-Other dates should preserve their relative offset from `issuedAt` in the source model.
-
-For example, if the model contains:
+When a model is applied:
 
 ```text
-issuedAt:  2026-08-01
-dueDate:   2026-08-31
+issuedAt = current date
 ```
 
-and the new document is created on:
-
-```text
-issuedAt:  2026-09-05
-```
-
-the resulting date should initially be:
-
-```text
-dueDate:   2026-10-05
-```
-
-The same principle should apply to other relevant dates linked to the document lifecycle.
+For date fields whose relative relationship with the model's `issuedAt` can be determined, MOA preserves that relative offset.
 
 In general:
 
@@ -163,140 +186,193 @@ In general:
 newDate = newIssuedAt + (modelDate - modelIssuedAt)
 ```
 
-This provides useful initial values while keeping them predictable.
+This principle is currently applied where relevant to:
 
-All generated dates remain editable by the user before saving.
+- `validFrom`;
+- `validUntil`;
+- `ThirdPartyEntry::entryDate`;
+- `Analysis::analysisDate`.
 
-If a source date is empty, the corresponding date should remain empty unless the normal document creation rules specify otherwise.
+Example:
+
+```text
+Model issuedAt:    2026-08-01
+Model validUntil:  2026-08-31
+```
+
+If the model is applied on:
+
+```text
+New issuedAt:      2026-09-05
+```
+
+the resulting date becomes:
+
+```text
+New validUntil:    2026-10-05
+```
+
+If the source model has no `issuedAt`, no relative offset can be calculated.
+
+In this situation:
+
+- document validity dates that cannot be calculated remain empty;
+- recreated third party entries use the current date where required;
+- recreated analysis entries use the current date where required.
+
+If a source date is empty, the corresponding optional date remains empty unless the normal creation rules require a date.
+
+All generated dates remain editable by the user.
 
 ---
 
 ### Data Not Copied
 
-Occurrence-specific information must not be copied from the source document.
+Occurrence-specific information is not copied from the source document.
 
 This includes at least:
 
 - document identifier;
+- document reference;
 - uploaded file;
 - file metadata specific to the source file;
 - creation metadata;
 - update metadata;
+- document status;
 - model status;
 - model name.
 
-The newly created document must not automatically become a model because its source document is a model.
+The document reference is deliberately excluded because it commonly represents an occurrence-specific identifier such as an invoice number.
+
+The target document does not automatically become a model because its source document is a model.
 
 ---
 
 ### DocumentModelService
 
-Introduce a dedicated application service:
+Model application logic is centralized in:
 
 ```php
 DocumentModelService
 ```
 
-The service is responsible for applying a document model to a new document.
-
-Its responsibilities should include:
+The service is responsible for:
 
 - copying reusable document properties;
 - preserving the current document status;
-- recreating related analysis data;
+- excluding occurrence-specific information;
+- resetting `issuedAt` to the current date;
+- calculating relative document dates;
+- replacing tags;
+- recreating analysis allocations;
 - recreating analysis dimension assignments;
 - recreating third party entries;
-- resetting occurrence-specific information;
-- initializing `receivedAt` and `issuedAt`;
-- calculating relative dates from the source model;
-- keeping model-copy logic outside controllers and forms.
+- handling date initialization for recreated related entities.
 
-Controllers, forms and Twig templates must not contain the business logic used to apply model data.
+Controllers, forms and Twig templates do not contain the business logic used to copy model data.
 
-The service should become the central place for future model-related behavior.
-
-This is especially important because the `Document` domain is still evolving.
+The service is the central place for future model-related behavior.
 
 Future document properties and relations should be integrated into the model workflow through this service rather than through a parallel template entity.
 
 ---
 
-### Model Management
+### Document Index Integration
 
-Models remain normal documents and therefore do not require a separate CRUD.
+Document models remain visible in the normal document index.
 
-A document can be marked or unmarked as a model.
+A model document is identified with a Font Awesome model icon displayed next to its reference.
 
-The model configuration should allow:
+Hovering over the icon exposes its model display name.
 
-- enabling or disabling model status;
-- optionally defining a custom model name.
+The document filters include a model filter with three states:
 
-Initial model management may remain available through EasyAdmin if this keeps the first implementation simple.
+```text
+All documents
+Models only
+Non-models only
+```
 
-A dedicated frontend model management interface is not required for v0.9.
+The model filter integrates with the existing document filters, search and pagination.
+
+Document counts and financial totals respect the active filters, including the model filter.
+
+Empty filtered results are handled safely.
 
 ---
 
 ### Batch Document Import
 
-Allow users to select or drop multiple files during document import.
+The document import workflow supports selecting or dropping multiple PDF files.
 
-Each file creates its own independent `Document`.
+Only PDF files are accepted.
 
 Example:
 
 ```text
-Select 8 files
+Select 8 PDF files
 
         ↓
 
-8 document entries
+8 independent documents
+
+        ↓
+
+Return to document index
 
         ↓
 
 Qualification workflow
 ```
 
-The existing single-document import must remain available.
+Each imported PDF creates its own independent `Document`.
 
-Batch import must reuse the existing document creation architecture as much as possible rather than introducing a separate document domain workflow.
+The batch import reuses the existing document creation and storage architecture rather than introducing a separate document domain workflow.
+
+Each newly created document:
+
+- receives the configured default status;
+- stores its own PDF file;
+- receives an initial reference derived from the PDF filename;
+- remains independently editable.
+
+After the batch operation completes, the user is redirected to the document index.
+
+A success flash reports the number of imported documents.
+
+Example:
+
+```text
+8 documents imported.
+```
+
+The existing single-file use case remains supported naturally by selecting or dropping one PDF.
 
 ---
 
 ### Batch Import and Models
 
-Document models should integrate naturally with batch import.
+Batch import and document models remain deliberately decoupled.
 
-The workflow should allow repetitive metadata entry to be reduced when several similar documents are imported together.
-
-Potential interactions include:
+The implemented workflow is:
 
 ```text
-Multiple files
-      ↓
-Select model
-      ↓
-Apply reusable information
-      ↓
-Review each document
-```
-
-or:
-
-```text
-Multiple files
-      ↓
-Create documents
-      ↓
+Multiple PDF files
+        ↓
+Create independent documents
+        ↓
+Return to document index
+        ↓
 Qualify documents individually
-      ↓
-Select a model when appropriate
+        ↓
+Apply a model when appropriate
 ```
 
-The exact user interface should be decided during implementation.
+A model is not automatically applied to an entire batch.
 
-The priority is to keep batch import understandable and avoid adding unnecessary complexity.
+This keeps the import workflow predictable and avoids introducing unnecessary batch configuration complexity.
+
+Users explicitly choose whether a model should be applied while qualifying each imported document.
 
 ---
 
@@ -314,9 +390,9 @@ This avoids maintaining a parallel representation of document metadata and relat
 
 ### Explicit User Control
 
-MOA must not automatically decide which model applies to a document.
+MOA does not automatically decide which model applies to a document.
 
-The user explicitly selects a model.
+The user explicitly selects and applies a model.
 
 Automatic model recognition is outside the scope of v0.9.
 
@@ -326,21 +402,21 @@ Automatic model recognition is outside the scope of v0.9.
 
 Model values are starting values.
 
-They must remain editable.
+They remain editable.
 
-A document created from a model becomes completely independent from the source model.
+A document to which a model has been applied becomes completely independent from the source model.
 
-Changing the source model later must never modify previously created documents.
+Changing the source model later never modifies previously created documents.
 
 ---
 
 ### Status Independence
 
-Document status is not part of the model data.
+Document status is not part of model data.
 
 New documents receive their status through the normal document creation workflow, including the configured default status.
 
-Applying a model must never replace the current document status.
+Applying a model never replaces the current document status.
 
 ---
 
@@ -348,9 +424,9 @@ Applying a model must never replace the current document status.
 
 Models provide date patterns rather than absolute dates.
 
-`receivedAt` and `issuedAt` are initialized using the current date.
+`issuedAt` is initialized using the current date when a model is applied.
 
-Other relevant dates preserve their relative offset from the model's `issuedAt`.
+Other relevant dates preserve their relative offset from the model's `issuedAt` whenever that offset can be calculated.
 
 This allows recurring documents to inherit useful date relationships without copying obsolete absolute dates.
 
@@ -360,7 +436,7 @@ This allows recurring documents to inherit useful date relationships without cop
 
 Model-copy behavior belongs in `DocumentModelService`.
 
-The service must remain independent from the presentation layer.
+The service remains independent from the presentation layer.
 
 Future changes to the `Document` domain should require changes primarily in this service rather than duplicated logic across controllers, forms or templates.
 
@@ -368,11 +444,11 @@ Future changes to the `Document` domain should require changes primarily in this
 
 ### Preserve Existing Workflows
 
-Existing document creation and import workflows must continue to work without using models.
+Existing document workflows continue to work without using models.
 
 Models are an optional productivity feature.
 
-Batch import must complement rather than replace single-document import.
+Batch import complements rather than replaces single-document import.
 
 ---
 
@@ -390,89 +466,114 @@ v0.9 deliberately excludes:
 - scheduled imports;
 - background document ingestion;
 - automatic document matching;
-- recurring document generation.
+- recurring document generation;
+- automatic model application during batch import.
 
 These features may be considered in later versions.
 
 ---
 
-## Suggested Implementation Order
+## Delivered
 
 ### Phase 1 — Default Status
 
-- Add default status support.
-- Configure it through EasyAdmin.
-- Apply it during normal document creation.
-- Ensure only one status can be the default.
+- Added default status support.
+- Default status configurable through EasyAdmin.
+- New documents automatically receive the default status.
+- Only one status can be configured as default.
+- Applying a model preserves the target document status.
 
 ### Phase 2 — Document Model Metadata
 
-- Add `isModel`.
-- Add nullable `modelName`.
-- Use `getDisplayName()` when `modelName` is empty.
-- Allow model configuration through EasyAdmin.
-- Ensure marking a document as a model does not affect its normal behavior.
+- Added `isModel`.
+- Added nullable `modelName`.
+- Added `getModelDisplayName()` with fallback to `getDisplayName()`.
+- Added model configuration through EasyAdmin.
+- Added model configuration to the frontend document edit form.
+- Marking a document as a model does not alter its normal behavior.
+- Added model identification to the document index.
+- Added Models / Non-models filtering.
 
 ### Phase 3 — DocumentModelService
 
-- Introduce `DocumentModelService`.
-- Copy reusable document fields.
-- Preserve the current document status.
-- Reset occurrence-specific fields.
-- Reset `receivedAt` and `issuedAt` to the current date.
-- Calculate other dates using their relative offset from the model's `issuedAt`.
-- Recreate analysis allocations.
-- Recreate analysis dimension assignments.
-- Recreate third party entries.
+- Introduced `DocumentModelService`.
+- Reusable document fields are copied centrally.
+- Document reference is deliberately not copied.
+- Current target status is preserved.
+- `issuedAt` is reset to the current date.
+- Relative validity dates are calculated from the source `issuedAt`.
+- Tags are replaced from the model.
+- Analysis allocations are recreated.
+- Analysis dimension assignments are recreated.
+- Third party entries are recreated.
+- Related entry dates are shifted relative to the source model where possible.
+- Related required dates fall back to the current date when the source model has no usable `issuedAt`.
 
 ### Phase 4 — Model Selection
 
-- Add model selection to document creation.
-- Display only documents explicitly marked as models.
-- Use `modelName` or fall back to `getDisplayName()`.
-- Apply the selected model through `DocumentModelService`.
-- Keep all copied values editable.
-- Validate the workflow with recurring real-world documents.
+- Added a dedicated model section to the frontend document edit workflow.
+- Only explicitly marked models are available.
+- Model names use `getModelDisplayName()`.
+- Added explicit Apply action.
+- Model application uses a POST route with CSRF protection.
+- Model application delegates business logic to `DocumentModelService`.
+- Copied values remain editable.
+- Source documents remain unchanged.
 
 ### Phase 5 — Batch Import
 
-- Allow multiple files to be selected or dropped.
-- Create independent documents for every file.
-- Reuse the existing document creation workflow.
-- Integrate document models where useful.
-- Preserve single-document import behavior.
+- Added multiple PDF file selection.
+- Added multiple PDF drag and drop.
+- Each PDF creates an independent document.
+- Existing document creation and storage architecture is reused.
+- Default status is assigned to every imported document.
+- Initial references are derived from filenames.
+- User is returned to the document index after import.
+- Import result is reported through a success flash.
+- Single-PDF import remains supported.
+- Frontend assets support multiple file selection and display the selected file count.
 
 ---
 
 ## Completion Criteria
 
-v0.9 can be considered complete when:
+v0.9 is complete because:
 
-- one status can be configured as the default;
-- new documents automatically receive the configured default status;
-- applying a model does not change the current document status;
-- an existing document can be marked as a model;
-- a model can optionally have a custom name;
-- `getDisplayName()` is used when no model name is defined;
-- only documents marked as models appear in the model selector;
-- marking a document as a model does not change its normal document behavior;
-- a model can be selected during document creation;
-- reusable document information is copied to the new document;
-- analysis allocations are recreated for the new document;
-- analysis dimension assignments are recreated for the new document;
-- third party entries are recreated for the new document;
-- source files and source identifiers are never copied;
-- `receivedAt` and `issuedAt` are initialized with the current date;
-- other relevant dates preserve their relative offset from the model's `issuedAt`;
-- copied and calculated values remain editable;
-- the newly created document does not automatically become a model;
-- the source model remains unchanged;
-- previously created documents remain independent from their model;
-- multiple files can be imported in a single operation;
-- every imported file creates an independent document;
-- existing single-document creation continues to work;
-- existing document lists, totals and analyses remain unchanged;
-- EasyAdmin remains compatible with the updated domain model.
+- [x] one status can be configured as the default;
+- [x] new documents automatically receive the configured default status;
+- [x] applying a model does not change the current document status;
+- [x] an existing document can be marked as a model;
+- [x] a model can optionally have a custom name;
+- [x] `getModelDisplayName()` falls back to `getDisplayName()` when no model name is defined;
+- [x] only documents marked as models appear in the model selector;
+- [x] marking a document as a model does not change its normal document behavior;
+- [x] models remain visible in the normal document index;
+- [x] models can be identified from the document index;
+- [x] documents can be filtered by model status;
+- [x] a model can be explicitly applied from the document edit workflow;
+- [x] reusable document information is copied to the target document;
+- [x] document reference is not copied from the model;
+- [x] document status is not copied from the model;
+- [x] analysis allocations are recreated for the target document;
+- [x] analysis dimension assignments are recreated for the target document;
+- [x] third party entries are recreated for the target document;
+- [x] source files and source identifiers are never copied;
+- [x] `issuedAt` is initialized with the current date when a model is applied;
+- [x] relevant dates preserve their relative offset from the model's `issuedAt` where possible;
+- [x] missing source `issuedAt` values are handled safely;
+- [x] copied and calculated values remain editable;
+- [x] the target document does not automatically become a model;
+- [x] the source model remains unchanged;
+- [x] previously created documents remain independent from their model;
+- [x] multiple PDF files can be imported in a single operation;
+- [x] every imported PDF creates an independent document;
+- [x] imported documents receive the configured default status;
+- [x] batch import returns the user to the document index;
+- [x] the number of imported documents is reported to the user;
+- [x] single-PDF import continues to work;
+- [x] existing document creation continues to work;
+- [x] document lists, filtered counts and financial totals remain functional;
+- [x] EasyAdmin remains compatible with the updated domain model.
 
 ---
 
